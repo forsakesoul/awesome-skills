@@ -18,6 +18,12 @@ A Claude Code "skill" is a packaged capability that Claude can invoke during a s
 |---|---|
 | [`copy-media-files`](./copy-media-files) | Concurrently copy photos/videos (ARW/HIF/JPG/...) from a source directory (e.g. an SD card's DCIM folder) to a target subdirectory, recursively, preserving the relative folder structure. Filters by file extension. |
 
+### Workflow
+
+| Skill | Description |
+|---|---|
+| [`long-task`](./long-task) | Run a long, multi-stage task without losing state to context limits: decompose into phases, persist progress to a file under `.claude/progress/`, delegate heavy searches to subagents, and resume cleanly after `/clear` or auto-compact. Ships an optional `PreCompact` backup hook. |
+
 <!-- Add new skills here, grouped by category. Keep entries one-line. -->
 
 ## Install a skill
