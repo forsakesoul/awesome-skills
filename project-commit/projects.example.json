@@ -1,0 +1,36 @@
+{
+  "_comment": "这是模板文件。复制为 projects.json 后填入你的实际项目路径。projects.json 不会被提交到 git 仓库。",
+  "projects": [
+    {
+      "name": "project-a",
+      "path": "/path/to/your/project-a",
+      "branch": "main",
+      "header_max_length": 100,
+      "commit_convention": "feat/fix/chore/docs/style/refactor（Conventional Commits），格式使用 `type(scope): subject`。每个独立分支/主题都需要选择一个稳定 `scope` 作为标记，同一分支内相关提交复用同一 `scope`；跨项目同主题也复用该 `scope`（强制）。Commit message 除类型前缀外需描述实际改动点，建议 50-100 个中文字符，改动大可适当增加；避免只写\"merge\"\"update\"等空泛描述。"
+    },
+    {
+      "name": "project-b",
+      "path": "/path/to/your/project-b",
+      "branch": "main",
+      "commit_convention": "提交保持聚焦，使用 Conventional Commit 前缀。跨仓同一主题必须带同一个 scope，与 project-a 提交风格保持一致。同一 commit 只覆盖一个明确目的，不要混入无关格式化或运行产物。Commit message 建议 50-100 个中文字符。"
+    },
+    {
+      "name": "project-c",
+      "path": "/path/to/your/project-c",
+      "branch": "main",
+      "commit_convention": "提交保持聚焦，使用 Conventional Commit 前缀。跨仓同一主题必须带同一个 scope，与 project-a 提交风格保持一致。同一 commit 只覆盖一个明确目的，不要混入无关格式化、产物或敏感信息。Commit message 建议 50-100 个中文字符。"
+    }
+  ],
+  "commit_rules": {
+    "derive_scope_from_branch": "生成 commit message 前，先读取每个项目的当前分支名（git branch --show-current），从分支名自动推导 scope：取分支名中最后一个 / 后的部分作为建议 scope。例如 feature/removeReload → scope=removeReload，bug/fix-login → scope=fix-login。若分支名无明显主题词，则参考近期 commit 的 scope 使用习惯。跨项目同一主题必须复用同一个 scope。",
+    "scope_consistency": "跨项目同一主题的改动必须使用同一个 scope。若多个项目均在当前分支有改动，统一使用同一个 scope（优先从分支名推导，跨项目分支名一致则直接使用）。",
+    "header_max_length": "Header（type(scope): subject 整行）不得超过 100 个字符。若描述过长，使用短 header + body 的格式：header 控制在 100 字符内，详细描述写在 body（header 与 body 之间空一行）。",
+    "message_length_scaling": "Commit message 描述长度应与改动规模成正比：改动文件 ≤3 个且总行数 ≤50 → 50-80 字；改动文件 4-8 个或 50-200 行 → 80-180 字；改动文件 ≥9 个或 >200 行 → 180-300 字。避免只写\"update\"、\"merge\"等空泛描述。",
+    "reference_style": "生成 commit message 前，先读取该项目最近 10 条 commit message（git log --oneline -10），参考其风格、术语和 scope 使用习惯。"
+  },
+  "default_scope_hint": "优先从分支名自动推导 scope（如 feature/removeReload → removeReload），跨项目同一主题强制复用同一个 scope",
+  "header_max_length": 100,
+  "commit_message_subject_min_length": 50,
+  "commit_message_subject_max_length": 300,
+  "commit_types": ["feat", "fix", "chore", "docs", "style", "refactor", "test", "perf", "ci", "build"]
+}

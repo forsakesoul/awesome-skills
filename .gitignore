@@ -7,3 +7,5 @@ __pycache__/
 *.pyc
 private.md
 private/
+projects.json
+config.json

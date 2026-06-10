@@ -23,6 +23,13 @@ A Claude Code "skill" is a packaged capability that Claude can invoke during a s
 | Skill | Description |
 |---|---|
 | [`long-task`](./long-task) | Run a long, multi-stage task without losing state to context limits: decompose into phases, persist progress to a file under `.claude/progress/`, delegate heavy searches to subagents, and resume cleanly after `/clear` or auto-compact. Ships an optional `PreCompact` backup hook. |
+| [`project-commit`](./project-commit) | Batch-commit code across multiple Git repos with one command. Scans all configured projects, generates Conventional Commits messages from diffs (via built-in AI or Anthropic API), shows a summary table for confirmation, then commits. Supports `--dry-run`, `--push`, `--project <name>`, and `--message "<msg>"`. Config via local `projects.json` (never committed). |
+
+### Productivity
+
+| Skill | Description |
+|---|---|
+| [`daily-report`](./daily-report) | Generate a work daily report ("工作日报") from today's Git commits across one or more repos, filtered by operator/author. A helper script collects the day's commits (subject, body, files, +/− stats); Claude then summarizes them into a clean, value-focused report. Supports today / yesterday / last-N-days and multiple repos & authors. |
 
 <!-- Add new skills here, grouped by category. Keep entries one-line. -->
 

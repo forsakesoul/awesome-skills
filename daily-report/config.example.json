@@ -1,0 +1,14 @@
+{
+  "_comment": "这是模板文件。复制为 config.json 后填入你的实际路径和配置。config.json 不会被提交到 git 仓库。",
+  "author": {
+    "_comment": "git log --author 匹配的作者名/邮箱，支持正则",
+    "patterns": ["your-name", "your-email@example.com"]
+  },
+  "repos": [
+    "/path/to/your/repo-1",
+    "/path/to/your/repo-2",
+    "/path/to/your/repo-3"
+  ],
+  "output_dir": "/path/to/your/daily-report/output/directory",
+  "file_naming": "MMDD.md"
+}
