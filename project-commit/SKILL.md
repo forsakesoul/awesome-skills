@@ -108,7 +108,7 @@ bash $SKILL_DIR/scripts/scan_projects.sh --diff
 在 `~/.zshrc` 中配置，commit message 改为调用 Anthropic API 生成：
 
 ```bash
-export ANTHROPIC_AUTH_TOKEN="sk-ant-api03-xxxxx"
+export ANTHROPIC_AUTH_TOKEN="<your-anthropic-api-key>"
 export ANTHROPIC_BASE_URL="https://api.anthropic.com"
 export ANTHROPIC_DEFAULT_SONNET_MODEL="claude-sonnet-4-20250514"
 ```
