@@ -1,0 +1,4 @@
+interface:
+  display_name: "同步现状文档"
+  short_description: "审计并同步已实现、已测试或已发布系统中的全部项目文档"
+  default_prompt: "使用 $sync-as-built-docs 审计当前实现，并同步所有过时或缺失的项目文档。"
