@@ -1,6 +1,13 @@
 ---
 name: copy-media-files
-description: Concurrently copy media files (ARW/HIF/JPG/CR3/NEF/MP4 etc.) from a source directory to a target subdirectory under the current working directory, recursing into all subfolders and preserving the relative folder structure. Filters by file extension (default `arw`, multiple allowed). Use when the user wants to import or back up photos/videos from an SD card or camera DCIM tree by extension. Triggers: "import RAW", "back up photos", "copy arw/hif files", "从 SD 卡复制", "导入相机文件", "搬运照片".
+description: >-
+  Concurrently copy media files (ARW/HIF/JPG/CR3/NEF/MP4 etc.) from a source
+  directory to a target subdirectory under the current working directory,
+  recursing into all subfolders and preserving the relative folder structure.
+  Filters by file extension (default `arw`, multiple allowed). Use when the user
+  wants to import or back up photos/videos from an SD card or camera DCIM tree
+  by extension. Triggers: "import RAW", "back up photos", "copy arw/hif files",
+  "从 SD 卡复制", "导入相机文件", "搬运照片".
 ---
 
 # copy-media-files
@@ -20,10 +27,10 @@ description: Concurrently copy media files (ARW/HIF/JPG/CR3/NEF/MP4 etc.) from a
 
 ## 用法
 
-脚本路径：`~/.claude/skills/copy-media-files/scripts/copy_media.py`
+执行前，从当前已加载的 `SKILL.md` 绝对路径取得其所在目录，并将下面的 `<skill-dir>` 替换为该目录。不要假设 Claude Code、Codex 或其他 runner 的固定安装路径。
 
 ```bash
-python3 ~/.claude/skills/copy-media-files/scripts/copy_media.py <source> \
+python3 "<skill-dir>/scripts/copy_media.py" <source> \
     [-o OUTPUT] [-e EXT ...] [-w WORKERS]
 ```
 
@@ -44,14 +51,14 @@ python3 ~/.claude/skills/copy-media-files/scripts/copy_media.py <source> \
 
 ```bash
 # 复制 .arw 到 ./arw_files/
-python3 ~/.claude/skills/copy-media-files/scripts/copy_media.py /Volumes/Untitled/DCIM
+python3 "<skill-dir>/scripts/copy_media.py" /Volumes/Untitled/DCIM
 
 # 复制 .hif 到 ./2026/firstHalfYear/
-python3 ~/.claude/skills/copy-media-files/scripts/copy_media.py \
+python3 "<skill-dir>/scripts/copy_media.py" \
     "/Volumes/Untitled/DCIM" -o 2026/firstHalfYear -e hif
 
 # 同时复制 ARW 和 HEIF（双格式拍摄）
-python3 ~/.claude/skills/copy-media-files/scripts/copy_media.py \
+python3 "<skill-dir>/scripts/copy_media.py" \
     "/Volumes/Untitled/DCIM" -o backup -e arw -e hif -w 32
 ```
 

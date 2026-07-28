@@ -1,6 +1,16 @@
 ---
 name: long-task
-description: Run a long, multi-stage, time-consuming task without losing state when the context window fills up, auto-compacts, or the session slows down. Decomposes the task into phases, persists progress to a file under `.claude/progress/`, delegates heavy searches to subagents to keep the main context lean, proactively suggests `/clear` at checkpoints, and resumes from the progress file in a fresh session. Use when a task is large or complex enough that context overflow, auto-compaction, or long-running slowdowns would otherwise derail it. Triggers: "这个任务很大/很复杂", "分阶段做", "长任务", "别让上下文爆了", "上下文老是超出", "接着上次的任务继续", "long running task", "break this into phases", "resume my task", "don't blow up the context".
+description: >-
+  Run a long, multi-stage, time-consuming task without losing state when the
+  context window fills up, auto-compacts, or the session slows down. Decomposes
+  the task into phases, persists progress to a file under `.claude/progress/`,
+  delegates heavy searches to subagents to keep the main context lean,
+  proactively suggests `/clear` at checkpoints, and resumes from the progress
+  file in a fresh session. Use when a task is large or complex enough that
+  context overflow, auto-compaction, or long-running slowdowns would otherwise
+  derail it. Triggers: "这个任务很大/很复杂", "分阶段做", "长任务", "别让上下文爆了",
+  "上下文老是超出", "接着上次的任务继续", "long running task", "break this into
+  phases", "resume my task", "don't blow up the context".
 ---
 
 # long-task

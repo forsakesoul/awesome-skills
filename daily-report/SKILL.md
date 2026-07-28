@@ -1,24 +1,30 @@
+---
+name: daily-report
+description: >-
+  根据一个或多个 Git 仓库当天、昨天或最近若干天的提交记录生成工作日报，并按作者过滤后汇总工作价值、变更范围与结果。当用户要求生成、总结或补充工作日报时使用。
+---
+
 # Daily Report Skill
 
 基于 Git 提交记录生成工作日报。
 
 ## 安装
 
-首次使用前，将模板配置复制为真实配置：
+首次使用前，从当前已加载的 `SKILL.md` 绝对路径取得其所在目录，并将下面的 `<skill-dir>` 替换为该目录，再将模板配置复制为真实配置：
 
 ```bash
-cp config.example.json config.json
+cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 ```
 
-然后编辑 `config.json`，填入你的实际仓库路径、作者名和输出目录。
+然后编辑 `<skill-dir>/config.json`，填入你的实际仓库路径、作者名和输出目录。
 
 > `config.json` 已加入 `.gitignore`，不会被提交到 git 仓库。`config.example.json` 是模板，随项目提交。
 
 ## 配置
 
-所有配置统一在 `config.json`（与 SKILL.md 同级）中，**不在技能中硬编码**。
+所有配置统一在 `<skill-dir>/config.json`（与 `SKILL.md` 同级）中，**不在技能中硬编码**。不要依赖调用时的当前工作目录，也不要假设 runner 的固定安装路径。
 
-若 `config.json` 不存在，回退到 `config.example.json` 并提示用户创建真实配置。
+若 `<skill-dir>/config.json` 不存在，回退到 `<skill-dir>/config.example.json` 并提示用户创建真实配置。
 
 ```json
 {
