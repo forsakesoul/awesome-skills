@@ -111,15 +111,15 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - **<工作类别2>**：<同上>。若一类较复杂，可在类别下再用 `-` 展开多条子项，每条带哈希。
 - **<工作类别3>**：<同上>。
 
-### <跨仓库同步工作标题>（如 AI 协作文档三仓统一重构 / ops-platform + proxy-vestack + proxy-vestack-verify / feature/rule）
+### <跨仓库同步工作标题>（如协作文档三仓统一重构 / project-a + project-b + project-c / feature/rule）
 
 - **<子项>**：<总结>（`h1` / `h2` / `h3`，N 仓同步）。
-- **MR 创建**：ops-platform [!49](https://gitlab.xxx/-/merge_requests/49) → master，……。
+- **MR 创建**：project-a [!49](https://gitlab.example/-/merge_requests/49) → master，……。
 
 ### 已合入 master / main（可选，按天汇总交叉仓库合入）
 
-- ops-platform：`feature/rule` → `master`（`4c789d4`，08:43）。
-- central-operations-platform：`codex/xxx` → `main`（`b5a0b9e` merge），MR !9 合入。
+- project-a：`feature/rule` → `master`（`4c789d4`，08:43）。
+- project-b：`codex/xxx` → `main`（`b5a0b9e` merge），MR !9 合入。
 
 ### 分支状态（强烈建议保留）
 
@@ -132,28 +132,28 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 > 阶段按分支名 / 合入状态启发式推断（当前未对接 GitLab API，非真实状态）。`[ing]`=测试中(进行)、`[done]`=测试完成。
 
 #### 需求梳理
-- [PROJ-101 配置中心快捷入口](url) — ops-platform `feature/config-center`（`d8d9429c` / `99868edb`）
+- [PROJ-101 功能快捷入口](url) — project-a `feature/quick-entry`（`d8d9429c` / `99868edb`）
 
 #### 技术设计
-- [PROJ-102 Gateway 模块重构设计](url) — proxy-vestack `feature/gateway-module-architecture`（24ee8b8 设计透镜文档）
+- [PROJ-102 服务模块重构设计](url) — project-b `feature/module-architecture`（24ee8b8 设计文档）
 
 #### 开发中
-- [#123 告警通知域重构](url) — ops-platform `release/alert_refactor`（`fd56d0fd` / `4d8ec0ff`）+ proxy-vestack `feature/gateway-...`（`...`）
+- [#123 通知域重构](url) — project-a `release/notification-refactor`（`fd56d0fd` / `4d8ec0ff`）+ project-b `feature/service-...`（`...`）
 
 #### 测试中
-- [#88 OpsConsole SSO 回跳 [ing]](url) — proxy-vestack-verify `verify/sso-return`（`dc888b9` / `f78cecd`）
+- [#88 登录回跳验证 [ing]](url) — project-c `verify/login-return`（`dc888b9` / `f78cecd`）
 
 #### 验收中
-- [#90 单测双 Runner 验收 [done]](url) — ops-platform `refactor/unit-test`（`cca4e559`）
+- [#90 单测执行环境验收 [done]](url) — project-a `refactor/unit-test`（`cca4e559`）
 
 #### 待上线
-- [#77 能力地图真实数据](url) — ops-platform `release/alert_refactor`（已合 master，待发布）
+- [#77 功能数据接入](url) — project-a `release/data-integration`（已合 master，待发布）
 
 #### 已上线
-- [#70 仪表盘活过来](url) — ops-platform `master`（`b65336ad`）
+- [#70 仪表盘数据接入](url) — project-a `master`（`b65336ad`）
 
 #### 已合入主干（未发布）
-- [#65 角色权限分配](url) — ops-platform `release/alert_refactor`（合 master，未部署）
+- [#65 角色权限分配](url) — project-a `release/permission-update`（合 master，未部署）
 
 > ⚠ 阻塞：[#60 某需求](url) — 依赖后端接口未就绪（`WIP`）。
 
@@ -164,7 +164,7 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 提交 **N** 个（实质 X + merge Y）｜ 改动 **+N / −N** ｜ N 个仓库
 
 > 若当天跨多条主线，在数据概览后用 1-2 句点明主线，例如：
-> 「两条主线：AI 协作文档三仓统一重构；前端编码规则体系扩展。proxy-vestack-verify 额外完成验证结论回填。」
+> 「两条主线：协作文档三仓统一重构；前端编码规则体系扩展。验证仓额外完成结论回填。」
 
 ## 小结与建议
 
@@ -230,12 +230,11 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 
 | 仓库 | 本周提交 | 主功能 |
 |---|---|---|
-| ops-platform | ~N | … |
-| proxy-vestack | ~N | … |
-| proxy-vestack-verify | ~N | … |
-| ops-api | ~N | … |
-| central-operations-platform | ~N | … |
-| ai-agent-config | 0 | — |
+| project-a | ~N | … |
+| project-b | ~N | … |
+| project-c | ~N | … |
+| project-d | ~N | … |
+| project-e | 0 | — |
 
 **一句话**：<整体概括上周三条主线与成果>
 
