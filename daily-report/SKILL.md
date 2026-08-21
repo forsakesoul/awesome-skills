@@ -1,12 +1,12 @@
 ---
 name: daily-report
 description: >-
-  根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结，按作者过滤后汇总工作价值、变更范围与结果。当用户要求生成、总结或补充工作日报、周报、周功能总结、上周做了什么时使用。
+  根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结，按作者过滤后汇总工作价值、变更范围与结果，并可按阶段标记关联 GitLab Work Item。当用户要求生成、总结或补充工作日报、周报、周功能总结、上周做了什么时使用。
 ---
 
 # Daily Report Skill
 
-基于 Git 提交记录生成工作日报。
+基于 Git 提交记录生成工作日报。可选地把每个分支/提交关联的 GitLab Work Item 按阶段（需求梳理 / 技术设计 / 开发中 / 测试中 / 验收中 / 待上线 / 已上线 / 已合入主干）标记出来。
 
 ## 安装
 
@@ -31,7 +31,31 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
   "author": { "patterns": ["your-name", "your-email@example.com"] },
   "repos": ["/path/to/your/repo-1", "/path/to/your/repo-2"],
   "output_dir": "/path/to/your/daily-report/output",
-  "file_naming": "MMDD.md"
+  "file_naming": "MMDD.md",
+  "workItems": {
+    "enabled": true,
+    "gitlab": {
+      "base_url": "https://git.flam.dev",
+      "project_paths": {
+        "/path/to/your/repo-1": "intelligent-computing/repo-1",
+        "/path/to/your/repo-2": "intelligent-computing/repo-2"
+      },
+      "url_template": "{base_url}/{project}/-/work_items/{id}"
+    },
+    "id_patterns": ["#\\d+", "&\\d+", "[A-Z][A-Z0-9]+-\\d+"],
+    "stages": ["需求梳理", "技术设计", "开发中", "测试中", "验收中", "待上线", "已上线"],
+    "branch_stage_hints": {
+      "requirement": "需求梳理", "req": "需求梳理", "spec": "需求梳理",
+      "design": "技术设计", "rfc": "技术设计",
+      "feature/": "开发中", "fix/": "开发中", "dev/": "开发中", "refactor/": "开发中",
+      "test": "测试中", "qa": "测试中", "verify": "测试中",
+      "release/": "待上线", "hotfix/": "待上线", "staging": "待上线"
+    },
+    "merged_to_main_stage": "已合入主干",
+    "released_branch_hints": ["release/", "hotfix/"],
+    "blocked_hints": ["blocked", "WIP"],
+    "branch_work_items": {}
+  }
 }
 ```
 
@@ -39,6 +63,15 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - **repos**：Git 仓库路径列表
 - **output_dir**：日报输出目录（自动检测周子目录结构）
 - **file_naming**：日报文件命名格式（如 `MMDD.md` 生成 `0616.md`）
+- **workItems.enabled**：是否生成「Work Item 关联」章节（默认 `false`，老板侧为 `true`）
+- **workItems.gitlab.base_url / project_paths / url_template**：拼出 Work Item 链接。`url_template` 中 `{base_url}`、`{project}`（取 project_paths 映射）、`{id}`（提取到的纯 ID）会被替换；GitLab 若用 issue 而非 work item，可改为 `{base_url}/{project}/-/issues/{id}`
+- **workItems.id_patterns**：从分支名与 commit message 提取 Work Item ID 的正则列表（默认匹配 `#123` / `&123` / `PROJ-123`）
+- **workItems.stages**：阶段有序列表，可增删改（默认 7 个：需求梳理→技术设计→开发中→测试中→验收中→待上线→已上线；另「已合入主干」由 `merged_to_main_stage` 控制）
+- **workItems.branch_stage_hints**：分支名子串 → 阶段 的启发式映射
+- **workItems.merged_to_main_stage**：分支已合入 main 但未发布时的归类阶段（默认「已合入主干」）
+- **workItems.released_branch_hints**：命中即视为「已上线」的分支名前缀
+- **workItems.blocked_hints**：命中即标记「⚠ 阻塞」的分支/commit 关键字
+- **workItems.branch_work_items**：手动兜底映射，格式 `"分支名(去 origin/)": {"id": "123", "title": "...", "stage": "开发中"}`，用于分支名/commit 未带 Work Item 引用时补全
 
 ## 使用方式
 
@@ -53,12 +86,17 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 ## 日报生成流程
 
 1. **收集提交**: 对每个仓库执行 `git log --since="YYYY-MM-DD 00:00:00" --until="YYYY-MM-DD+1 00:00:00" --oneline --all --author="your-name\|your-github-username"`
-2. **获取详情**: 对每个提交执行 `git log --format="%h %ad %s" --date=format:"%H:%M"` 获取时间和提交信息
+2. **获取详情**: 对每个提交执行 `git log --format="%h %ad %s" --date=format:"%H:%M"` 获取时间和提交信息，并保留完整 subject/body 用于 Work Item ID 提取
 3. **分支归属**: 对每个提交执行 `git branch -r --contains <hash>` 确定所属分支，取第一个非 HEAD 分支
 4. **代码统计**: 执行 `git log --numstat --format=""` 统计增删行数
-5. **按分支分组**: 同一分支的提交归类到一起展示
-6. **生成日报**: 按模板生成 Markdown 日报
-7. **写入文件**: 自动创建目录并写入 Obsidian 日报文件
+5. **Work Item 关联**（若 `workItems.enabled`）:
+   - 对每个分支，从「分支名（去 `origin/`）」+ 该分支下所有 commit 的 subject/body 用 `id_patterns` 提取 Work Item ID；同时查 `branch_work_items` 手动映射
+   - 按 Work Item ID 归并（同一需求跨仓/跨分支合并为一行）
+   - 阶段判定：优先 `branch_stage_hints` 命中分支名 → 否则分支已合入 main 时按 `released_branch_hints`/`merged_to_main_stage` 归类 → 仍无则标「未分类」
+   - 命中 `blocked_hints` 的加「⚠ 阻塞」标记；测试中阶段项下用 `[ing]`/`[done]` 标注子状态（依据 commit 类型/合入状态推断，无 API 时保守标 `[ing]`）
+6. **按分支分组**: 同一分支的提交归类到一起展示
+7. **生成日报**: 按模板生成 Markdown 日报（含「Work Item 关联」章节）
+8. **写入文件**: 自动创建目录并写入 Obsidian 日报文件
 
 ## 日报模板
 
@@ -89,6 +127,38 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - <仓库>：当天无新提交（标注「0 个提交」）。
 - 另有未提交收尾（尚未 commit 的改动）：可单列一行注明。
 
+### Work Item 关联（GitLab）（若 workItems.enabled）
+
+> 阶段按分支名 / 合入状态启发式推断（当前未对接 GitLab API，非真实状态）。`[ing]`=测试中(进行)、`[done]`=测试完成。
+
+#### 需求梳理
+- [PROJ-101 配置中心快捷入口](url) — ops-platform `feature/config-center`（`d8d9429c` / `99868edb`）
+
+#### 技术设计
+- [PROJ-102 Gateway 模块重构设计](url) — proxy-vestack `feature/gateway-module-architecture`（24ee8b8 设计透镜文档）
+
+#### 开发中
+- [#123 告警通知域重构](url) — ops-platform `release/alert_refactor`（`fd56d0fd` / `4d8ec0ff`）+ proxy-vestack `feature/gateway-...`（`...`）
+
+#### 测试中
+- [#88 OpsConsole SSO 回跳 [ing]](url) — proxy-vestack-verify `verify/sso-return`（`dc888b9` / `f78cecd`）
+
+#### 验收中
+- [#90 单测双 Runner 验收 [done]](url) — ops-platform `refactor/unit-test`（`cca4e559`）
+
+#### 待上线
+- [#77 能力地图真实数据](url) — ops-platform `release/alert_refactor`（已合 master，待发布）
+
+#### 已上线
+- [#70 仪表盘活过来](url) — ops-platform `master`（`b65336ad`）
+
+#### 已合入主干（未发布）
+- [#65 角色权限分配](url) — ops-platform `release/alert_refactor`（合 master，未部署）
+
+> ⚠ 阻塞：[#60 某需求](url) — 依赖后端接口未就绪（`WIP`）。
+
+> 注：未检测到 Work Item 引用的分支（如 `qa_cicd`、纯文档分支）归「未分类」或按 `branch_work_items` 映射补全；如需准确阶段请配置 GitLab token 后对接 API。
+
 ## 数据概览
 
 提交 **N** 个（实质 X + merge Y）｜ 改动 **+N / −N** ｜ N 个仓库
@@ -111,6 +181,7 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - 跨仓库同步的工作可合并为一个分组标题，并在组内分别标注各仓哈希。
 - **「已合入 master」**小节按天汇总当天合入主分支的分支、merge 哈希与时间，附 GitLab MR 链接。
 - **「分支状态」**小节记录每个分支领先/落后 origin、是否合入、是否推送，以及当天无提交的仓库标注「0 个提交」——这是日报价值的关键，不能省略。
+- **「Work Item 关联」**小节（启用时）按 `stages` 顺序分组列出当天涉及的 GitLab Work Item，每条含可点击链接、关联分支与 commit 哈希；阶段为本地启发式，非 GitLab 真实状态。
 - "数据概览"汇总所有仓库的提交数（实质 + merge 拆分）和代码增删；"小结与建议"给整体总结与可操作的后续建议。
 
 ## 注意事项
@@ -122,6 +193,7 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - 代码统计只统计文件变更，不含 merge commit。
 - 采集务必用 `git log --all`，否则会漏掉 worktree / 未合入 feature 分支的提交。
 - 自动检测周目录结构（第一周 / 第二周 / 第三周 …），日报写入对应周子目录。
+- **Work Item 关联**：阶段判定是本地启发式（分支名关键字 + 合入状态 + `branch_work_items` 映射），不是 GitLab 真实状态；未检测到 ID 引用的分支归入「未分类」或靠映射补全。连 GitLab 后（配置 token）可升级为查真实阶段。
 
 ---
 
@@ -186,3 +258,4 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - 每节开头用 `>` 引用一句话定位该域的重要性（如"本周绝对主线"）。
 - «数据概览»用表格列各仓库提交数与主功能；«人员贡献»仅在多人协作时追加，区分「总体」与「个人」。
 - 文件名 `周功能总结-MMDD-MMDD.md`，与每日 `MMDD.md` 同目录（对应周子目录）。
+- 若 `workItems.enabled`，可在周报末尾附「**Work Item 阶段分布**」小节，按 `stages` 汇总本周各 Work Item 当前阶段。
