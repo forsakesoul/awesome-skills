@@ -10,5 +10,30 @@
     "/path/to/your/repo-3"
   ],
   "output_dir": "/path/to/your/daily-report/output/directory",
-  "file_naming": "MMDD.md"
+  "file_naming": "MMDD.md",
+  "workItems": {
+    "_comment": "是否生成「Work Item 关联」章节；stages 可增删改，branch_stage_hints 为分支名→阶段启发式",
+    "enabled": false,
+    "gitlab": {
+      "base_url": "https://git.example.com",
+      "project_paths": {
+        "/path/to/your/repo-1": "group/repo-1",
+        "/path/to/your/repo-2": "group/repo-2"
+      },
+      "url_template": "{base_url}/{project}/-/work_items/{id}"
+    },
+    "id_patterns": ["#\\d+", "&\\d+", "[A-Z][A-Z0-9]+-\\d+"],
+    "stages": ["需求梳理", "技术设计", "开发中", "测试中", "验收中", "待上线", "已上线"],
+    "branch_stage_hints": {
+      "requirement": "需求梳理", "req": "需求梳理", "spec": "需求梳理",
+      "design": "技术设计", "rfc": "技术设计",
+      "feature/": "开发中", "fix/": "开发中", "dev/": "开发中", "refactor/": "开发中",
+      "test": "测试中", "qa": "测试中", "verify": "测试中",
+      "release/": "待上线", "hotfix/": "待上线", "staging": "待上线"
+    },
+    "merged_to_main_stage": "已合入主干",
+    "released_branch_hints": ["release/", "hotfix/"],
+    "blocked_hints": ["blocked", "WIP"],
+    "branch_work_items": {}
+  }
 }
