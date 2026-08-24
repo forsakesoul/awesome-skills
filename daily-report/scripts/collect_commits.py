@@ -17,6 +17,8 @@ collect_commits.py —— 从一个或多个 Git 仓库收集「指定日期、�
     --today           今天 00:00 至现在（默认）
     --yesterday       昨天全天（昨天 00:00 至今天 00:00）
     --days N          最近 N 天（含今天，从 N-1 天前的 00:00 起）
+    --date YYYY-MM-DD 精确自然日 [00:00, 次日 00:00)
+    --timezone ZONE   IANA 时区名，如 Asia/Shanghai（默认系统本地时区）
     --since STR       原样传给 git 的 --since（一旦指定则覆盖上面的预设）
     --until STR       原样传给 git 的 --until
 
@@ -44,13 +46,15 @@ import argparse
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta
+from datetime import date as Date
+from datetime import datetime, timedelta, timezone, tzinfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 # ASCII 控制字符作为分隔符：提交之间用 RS(0x1e)，字段之间用 US(0x1f)。
 # 正常的 commit message 里不会出现这两个字节，因此可以安全地切分。
 RS = "\x1e"
 US = "\x1f"
-GIT_FORMAT = f"--pretty=format:{RS}%H{US}%an{US}%ae{US}%ad{US}%s{US}%b{US}"
+GIT_FORMAT = f"--pretty=format:{RS}%H{US}%an{US}%ae{US}%cI{US}%s{US}%b{US}"
 
 
 def run_git(repo: str, extra: list[str]) -> subprocess.CompletedProcess:
@@ -126,28 +130,62 @@ def parse_commits(raw: str) -> list[dict]:
     return commits
 
 
-def resolve_range(args: argparse.Namespace) -> tuple[str | None, str | None, str]:
-    """返回 (since, until, 人类可读的范围标签)。"""
-    now = datetime.now()
+def resolve_timezone(name: str | None) -> tuple[tzinfo, str]:
+    if name:
+        try:
+            return ZoneInfo(name), name
+        except ZoneInfoNotFoundError as exc:
+            raise ValueError(f"未知时区：{name}") from exc
+    local = datetime.now().astimezone().tzinfo or timezone.utc
+    return local, str(local)
+
+
+def resolve_range(
+    args: argparse.Namespace,
+) -> tuple[str | None, str | None, str, datetime | None, datetime | None, str]:
+    """返回 git 边界、标签、可复核时间边界和时区标签。"""
+    tz, timezone_label = resolve_timezone(args.timezone)
+    now = datetime.now(tz)
 
     def midnight(d: datetime) -> datetime:
         return d.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    fmt = "%Y-%m-%d %H:%M:%S"
+    def iso(d: datetime) -> str:
+        return d.isoformat(timespec="seconds")
 
     if args.since or args.until:
         label = f"自定义（since={args.since or '-'}, until={args.until or '-'}）"
-        return args.since, args.until, label
+        return args.since, args.until, label, None, None, timezone_label
+    if args.date:
+        try:
+            target = Date.fromisoformat(args.date)
+        except ValueError as exc:
+            raise ValueError(f"无效日期：{args.date}，应为 YYYY-MM-DD") from exc
+        start = datetime.combine(target, datetime.min.time(), tzinfo=tz)
+        end = start + timedelta(days=1)
+        return iso(start), iso(end), f"指定日期（{target}）", start, end, timezone_label
     if args.yesterday:
         start = midnight(now) - timedelta(days=1)
         end = midnight(now)
-        return start.strftime(fmt), end.strftime(fmt), f"昨天（{start:%Y-%m-%d}）"
+        return iso(start), iso(end), f"昨天（{start:%Y-%m-%d}）", start, end, timezone_label
     if args.days:
         start = midnight(now) - timedelta(days=args.days - 1)
-        return start.strftime(fmt), None, f"最近 {args.days} 天（{start:%Y-%m-%d} 起）"
+        return iso(start), iso(now), f"最近 {args.days} 天（{start:%Y-%m-%d} 起）", start, now, timezone_label
     # 默认：今天
     start = midnight(now)
-    return start.strftime(fmt), None, f"今天（{now:%Y-%m-%d}）"
+    return iso(start), iso(now), f"今天（{now:%Y-%m-%d}）", start, now, timezone_label
+
+
+def keep_in_half_open_range(
+    commits: list[dict], start: datetime | None, end: datetime | None
+) -> list[dict]:
+    if start is None or end is None:
+        return commits
+    return [
+        commit
+        for commit in commits
+        if start <= datetime.fromisoformat(commit["date"]).astimezone(start.tzinfo) < end
+    ]
 
 
 def build_log_cmd(args: argparse.Namespace, since: str | None, until: str | None) -> list[str]:
@@ -187,6 +225,8 @@ def main() -> int:
     p.add_argument("--today", action="store_true", help="今天（默认）")
     p.add_argument("--yesterday", action="store_true", help="昨天全天")
     p.add_argument("--days", type=int, help="最近 N 天（含今天）")
+    p.add_argument("--date", help="精确自然日（YYYY-MM-DD）")
+    p.add_argument("--timezone", help="IANA 时区名，如 Asia/Shanghai（默认系统本地时区）")
     p.add_argument("--since", help="原样传给 git 的 --since（覆盖预设）")
     p.add_argument("--until", help="原样传给 git 的 --until")
     p.add_argument("--no-body", action="store_true", help="不输出提交正文")
@@ -199,7 +239,10 @@ def main() -> int:
         print("错误：--days 必须 ≥ 1", file=sys.stderr)
         return 1
 
-    since, until, range_label = resolve_range(args)
+    try:
+        since, until, range_label, range_start, range_end, timezone_label = resolve_range(args)
+    except ValueError as exc:
+        p.error(str(exc))
     log_cmd = build_log_cmd(args, since, until)
 
     authors = args.author or []
@@ -207,6 +250,12 @@ def main() -> int:
 
     lines: list[str] = ["# Git 提交采集结果", ""]
     lines.append(f"- **时间范围**：{range_label}")
+    if range_start is not None and range_end is not None:
+        lines.append(
+            f"- **精确边界**：[{range_start.isoformat(timespec='seconds')}, "
+            f"{range_end.isoformat(timespec='seconds')})"
+        )
+    lines.append(f"- **时区**：{timezone_label}")
     lines.append(f"- **作者过滤**：{('、'.join(authors)) if authors else '全部作者'}")
     lines.append(f"- **分支范围**：{'仅当前分支' if args.no_all else '所有分支 (--all)'}")
     lines.append(f"- **合并提交**：{'包含' if args.merges else '已排除'}")
@@ -236,7 +285,7 @@ def main() -> int:
             ]
             continue
 
-        commits = parse_commits(result.stdout)
+        commits = keep_in_half_open_range(parse_commits(result.stdout), range_start, range_end)
         r_added = sum(c["added"] for c in commits)
         r_deleted = sum(c["deleted"] for c in commits)
         total_commits += len(commits)
@@ -268,6 +317,7 @@ def main() -> int:
         lines += [
             "> ⚠️ **在指定的时间范围与作者条件下，未找到任何提交记录。**",
             "> 请确认：仓库路径是否正确、作者名/邮箱是否拼对、日期范围是否合适。",
+            "> 0 个提交只表示 Git 采集结果，不等于当天没有其他工作；未提交改动、设计、QA、验收和沟通应另行取证。",
             "",
         ]
 

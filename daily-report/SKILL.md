@@ -83,10 +83,19 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 
 如需指定其他仓库，可补充仓库路径。
 
+生成前先冻结目标日期和时区。指定日期时优先运行随 Skill 提供的采集脚本：
+
+```bash
+python3 "<skill-dir>/scripts/collect_commits.py" <repo...> \
+  --date YYYY-MM-DD --timezone Asia/Shanghai -a '<author-pattern>'
+```
+
+脚本输出的精确半开区间 `[当天 00:00, 次日 00:00)` 是提交归属的事实边界；不得把区间外提交写进当天。周末归并只改变日报展示归属，原始提交仍按各自自然日分别采集并保留边界。
+
 ## 日报生成流程
 
-1. **收集提交**: 对每个仓库执行 `git log --since="YYYY-MM-DD 00:00:00" --until="YYYY-MM-DD+1 00:00:00" --oneline --all --author="your-name\|your-github-username"`
-2. **获取详情**: 对每个提交执行 `git log --format="%h %ad %s" --date=format:"%H:%M"` 获取时间和提交信息，并保留完整 subject/body 用于 Work Item ID 提取
+1. **收集提交**: 使用 `scripts/collect_commits.py --date YYYY-MM-DD --timezone <zone>` 对全部配置仓库按精确自然日、`--all` 和作者条件采集；保留脚本回显的时区与半开区间
+2. **获取详情**: 复用采集脚本输出的 committer ISO 时间、提交信息及完整 subject/body，避免混用 author date，并据此提取 Work Item ID
 3. **分支归属**: 对每个提交执行 `git branch -r --contains <hash>` 确定所属分支，取第一个非 HEAD 分支
 4. **代码统计**: 执行 `git log --numstat --format=""` 统计增删行数
 5. **Work Item 关联**（若 `workItems.enabled`）:
@@ -190,6 +199,7 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - 只纳入 config.author.patterns 匹配到的作者提交（个人日报视角）；若需团队视角，临时放宽 author 或说明。
 - 分支名取 remote 分支的简称（去掉 `origin/`）；worktree 分支也按实际分支名标注。
 - 如果某个仓库无提交，仍然列出并标注「0 个提交」。
+- “0 个提交”只表示该日期、时区、作者和仓库集合下没有匹配的 Git commit。输出前必须确认已覆盖全部配置仓库且未使用 `--no-all`；未提交改动、设计、QA、验收和沟通另列为“非提交活动”，不得据此写成“当天没有工作”。
 - 代码统计只统计文件变更，不含 merge commit。
 - 采集务必用 `git log --all`，否则会漏掉 worktree / 未合入 feature 分支的提交。
 - 自动检测周目录结构（第一周 / 第二周 / 第三周 …），日报写入对应周子目录。
