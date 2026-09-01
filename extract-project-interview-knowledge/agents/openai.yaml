@@ -1,0 +1,4 @@
+interface:
+  display_name: "提炼项目面试知识"
+  short_description: "从源码与工程证据生成可复核的面试知识"
+  default_prompt: "使用 $extract-project-interview-knowledge，把指定项目或事故整理成有源码锚点、回答框架和证据边界的面试知识。"
