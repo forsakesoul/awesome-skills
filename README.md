@@ -32,6 +32,12 @@ An agent skill is a packaged capability that a compatible AI coding agent can in
 |---|---|
 | [`daily-report`](./daily-report) | Generate a work daily report ("工作日报") from today's Git commits across one or more repos, filtered by operator/author. A helper script collects the day's commits (subject, body, files, +/− stats); Claude then summarizes them into a clean, value-focused report. Supports today / yesterday / last-N-days and multiple repos & authors. |
 
+### Knowledge
+
+| Skill | Description |
+|---|---|
+| [`extract-project-interview-knowledge`](./extract-project-interview-knowledge) | 从项目源码、测试、CI、发布与事故证据中提炼带源码锚点、回答框架和证据边界的面试知识。 |
+
 <!-- Add new skills here, grouped by category. Keep entries one-line. -->
 
 ## Install a skill
