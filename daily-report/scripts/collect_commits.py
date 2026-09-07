@@ -37,8 +37,9 @@ collect_commits.py —— 从一个或多个 Git 仓库收集「指定日期、�
     若无任何提交，给出明确提示。Claude 据此撰写日报。
 
 == 退出码 ==
-    0  正常（无论是否找到提交）
-    1  参数错误，或所有仓库都不是有效的 Git 仓库
+    0  完整采集（可以零提交）
+    1  覆盖不全或采集失败
+    2  argparse 参数校验失败
 """
 from __future__ import annotations
 
@@ -264,6 +265,8 @@ def main() -> int:
     total_commits = total_added = total_deleted = 0
     valid_repos = 0
     skipped: list[str] = []
+    failed: list[str] = []
+    collected = 0
 
     for repo in args.repos:
         repo_disp = repo
@@ -277,6 +280,7 @@ def main() -> int:
         name, branch = repo_meta(expanded)
         result = run_git(expanded, log_cmd)
         if result.returncode != 0:
+            failed.append(repo_disp)
             lines += [
                 f"## ⚠️ {name}  （{repo_disp}）",
                 "",
@@ -285,6 +289,7 @@ def main() -> int:
             ]
             continue
 
+        collected += 1
         commits = keep_in_half_open_range(parse_commits(result.stdout), range_start, range_end)
         r_added = sum(c["added"] for c in commits)
         r_deleted = sum(c["deleted"] for c in commits)
@@ -309,11 +314,12 @@ def main() -> int:
     # 合计
     lines += ["---", "", "## 合计", ""]
     lines.append(f"- 有效仓库：{valid_repos} 个" + (f"（跳过 {len(skipped)} 个）" if skipped else ""))
+    lines.append(f"- 采集状态：{'incomplete' if skipped or failed else 'complete'}；成功 {collected} 仓，失败 {len(failed)} 仓，跳过 {len(skipped)} 仓；以下合计仅覆盖成功仓库。")
     lines.append(f"- 提交总数：**{total_commits}** 个")
     lines.append(f"- 改动总量：+{total_added} / −{total_deleted}")
     lines.append("")
 
-    if total_commits == 0:
+    if total_commits == 0 and collected > 0:
         lines += [
             "> ⚠️ **在指定的时间范围与作者条件下，未找到任何提交记录。**",
             "> 请确认：仓库路径是否正确、作者名/邮箱是否拼对、日期范围是否合适。",
@@ -323,8 +329,8 @@ def main() -> int:
 
     sys.stdout.write("\n".join(lines))
     sys.stdout.write("\n")
-    # 所有传入的仓库都无效时，按文档约定返回 1（输出仍已写到 stdout 供阅读）。
-    return 1 if valid_repos == 0 else 0
+    # 覆盖不完整时返回 1；stdout 保留成功仓库的部分结果。
+    return 1 if valid_repos == 0 or failed or skipped else 0
 
 
 if __name__ == "__main__":

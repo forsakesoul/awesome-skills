@@ -57,26 +57,28 @@ import json, sys, subprocess, os
 
 config_file = sys.argv[1]
 project_filter = sys.argv[2] if sys.argv[2] else None
-diff_mode = sys.argv[3] == "True"
-verbose = sys.argv[4] == "True"
+diff_mode = sys.argv[3] == "true"
+verbose = sys.argv[4] == "true"
 
 with open(config_file) as f:
     config = json.load(f)
 
-projects = config["projects"]
+projects = [p for p in config["projects"] if not project_filter or p["name"] == project_filter]
+if not projects:
+    print(f"❌ 没有匹配的项目: {project_filter}")
+    sys.exit(1)
 scope_hint = config.get("default_scope_hint", "")
 
 CHANGED = []
 CLEAN = []
+FAILED = []
 
 for p in projects:
     name = p["name"]
     path = p["path"]
 
-    if project_filter and project_filter not in name:
-        continue
-
     if not os.path.isdir(path):
+        FAILED.append(name)
         print(f"⚠️  项目目录不存在: {path}")
         continue
 
@@ -84,7 +86,11 @@ for p in projects:
 
     # 检查是否有改动
     result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-    lines = [l for l in result.stdout.strip().splitlines() if l.strip()]
+    if result.returncode:
+        FAILED.append(name)
+        print(f"❌ {name}: git status 失败，状态未知")
+        continue
+    lines = [l for l in result.stdout.splitlines() if l.strip()]
 
     if not lines:
         CLEAN.append(name)
@@ -94,6 +100,8 @@ for p in projects:
 
     # 获取分支名
     branch_result = subprocess.run(["git", "branch", "--show-current"], capture_output=True, text=True)
+    if branch_result.returncode:
+        FAILED.append(name)
     branch = branch_result.stdout.strip() or "unknown"
 
     print(f"\n📂 {name}  ({branch})")
@@ -102,12 +110,16 @@ for p in projects:
     if diff_mode:
         # 显示 diff
         diff_result = subprocess.run(["git", "diff", "--stat"], capture_output=True, text=True)
+        if diff_result.returncode:
+            FAILED.append(name)
         if diff_result.stdout.strip():
             print("   📝 已暂存 + 未暂存:")
             for line in diff_result.stdout.strip().splitlines():
                 print(f"      {line}")
         # staged
         staged = subprocess.run(["git", "diff", "--cached", "--stat"], capture_output=True, text=True)
+        if staged.returncode:
+            FAILED.append(name)
         if staged.stdout.strip():
             print("   📦 Staged:")
             for line in staged.stdout.strip().splitlines():
@@ -131,4 +143,6 @@ if scope_hint and CHANGED:
 print(f"\n=== Summary ===")
 print(f"有改动的项目: {len(CHANGED)} 个 → {' '.join(CHANGED) if CHANGED else '无'}")
 print(f"干净的项目:   {len(CLEAN)} 个 → {' '.join(CLEAN) if CLEAN else '无'}")
+print(f"扫描失败的项目: {len(set(FAILED))} 个 → {' '.join(sorted(set(FAILED))) if FAILED else '无'}")
+sys.exit(1 if FAILED else 0)
 PYEOF
