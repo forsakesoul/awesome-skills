@@ -1,51 +1,50 @@
 #!/bin/sh
-# PreCompact backup hook — part of the `long-task` skill.
-#
-# Before Claude Code compacts the conversation (either a manual `/compact` or an
-# automatic auto-compact near the context limit), copy the current transcript to
-# a timestamped backup so nothing important is lost when history gets summarised
-# away.
-#
-# Wire it up in ~/.claude/settings.json (global) or a project .claude/settings.json:
-#
-#   "hooks": {
-#     "PreCompact": [
-#       { "matcher": "*", "hooks": [
-#         { "type": "command",
-#           "command": "~/.claude/skills/long-task/scripts/precompact_backup.sh" }
-#       ]}
-#     ]
-#   }
-#
-# The hook receives a JSON payload on stdin that includes at least:
-#   transcript_path  — path to the session's .jsonl transcript
-#   trigger          — "manual" or "auto"
-#
-# It ALWAYS exits 0: a backup failure must never block compaction.
+# Explicit raw-transcript backup; failure must not block compaction.
+[ "${LONG_TASK_BACKUP:-0}" = 1 ] || exit 0
+umask 077
+python3 - 3<&0 <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import sys
+import tempfile
 
-set -u
-
-payload=$(cat)
-
-# Extract fields from the JSON payload. python3 is available on macOS and most
-# setups; if it is missing, the values come back empty and we exit quietly.
-transcript=$(printf '%s' "$payload" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("transcript_path",""))' 2>/dev/null)
-trigger=$(printf '%s' "$payload" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("trigger","unknown"))' 2>/dev/null)
-
-# Nothing to back up — bail without blocking compaction.
-[ -n "$transcript" ] && [ -f "$transcript" ] || exit 0
-
-# Back up inside the project dir when Claude provides it, otherwise the cwd.
-base="${CLAUDE_PROJECT_DIR:-$PWD}"
-backup_dir="$base/.claude/compact-backups"
-mkdir -p "$backup_dir" || exit 0
-
-stamp=$(date +%Y%m%d-%H%M%S)
-cp "$transcript" "$backup_dir/transcript-$stamp-${trigger:-unknown}.jsonl" 2>/dev/null || exit 0
-
-# Keep only the 20 most recent backups; prune anything older.
-ls -1t "$backup_dir"/transcript-*.jsonl 2>/dev/null | tail -n +21 | while IFS= read -r old; do
-    rm -f "$old"
-done
-
+pending = None
+try:
+    payload = json.load(os.fdopen(3))
+    source = Path(payload.get('transcript_path', ''))
+    if not source.is_file():
+        raise ValueError('transcript unavailable')
+    project = str(Path(os.environ.get('CLAUDE_PROJECT_DIR', os.getcwd())).resolve())
+    project_id = hashlib.sha256(project.encode()).hexdigest()[:20]
+    state = Path(os.environ.get('XDG_STATE_HOME', str(Path.home() / '.local/state')))
+    directory = state / 'long-task' / 'compact-backups' / project_id
+    for folder in [state / 'long-task', state / 'long-task/compact-backups', directory]:
+        if folder.is_symlink():
+            raise ValueError('backup directory must not be a symlink')
+        folder.mkdir(parents=True, exist_ok=True, mode=0o700)
+        folder.chmod(0o700)
+    with tempfile.NamedTemporaryFile(dir=directory, prefix='transcript-', suffix='.tmp', delete=False) as output:
+        pending = Path(output.name)
+        with source.open('rb') as input_file:
+            shutil.copyfileobj(input_file, output)
+    target = pending.with_suffix('.jsonl')
+    os.link(pending, target)
+    pending.unlink()
+    pending = None
+    backups = sorted(directory.glob('transcript-*.jsonl'), key=lambda p: p.stat().st_mtime_ns, reverse=True)
+    for old in backups[20:]:
+        old.unlink()
+    print('long-task: raw transcript backup saved (private local state)', file=sys.stderr)
+except Exception as error:
+    print(f'long-task: backup failed ({type(error).__name__}); compaction continues', file=sys.stderr)
+finally:
+    if pending is not None:
+        pending.unlink(missing_ok=True)
+PY
+if [ "$?" != 0 ]; then
+  echo 'long-task: backup process failed; compaction continues' >&2
+fi
 exit 0

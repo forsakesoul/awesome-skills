@@ -32,6 +32,7 @@ AUTO_PUSH=false
 PROJECT_FILTER=""
 UNIFIED_MESSAGE=""
 SKIP_CONFIRM=false
+EXTERNAL_MODEL=false
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -39,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     --push|-p)    AUTO_PUSH=true; shift ;;
     --project)     PROJECT_FILTER="$2"; shift 2 ;;
     --message|-m) UNIFIED_MESSAGE="$2"; shift 2 ;;
+    --external-model) EXTERNAL_MODEL=true; shift ;;
     --yes|-y)     SKIP_CONFIRM=true; shift ;;
     *) echo "未知参数: $1"; exit 1 ;;
   esac
@@ -51,16 +53,47 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 # 用 python3 读取配置并驱动主流程
-python3 - "$CONFIG_FILE" "$PROJECT_FILTER" "$UNIFIED_MESSAGE" "$DRY_RUN" "$AUTO_PUSH" "$SKIP_CONFIRM" "$GENERATE_SCRIPT" << 'PYEOF'
-import json, sys, subprocess, os, tempfile
+python3 - "$CONFIG_FILE" "$PROJECT_FILTER" "$UNIFIED_MESSAGE" "$DRY_RUN" "$AUTO_PUSH" "$SKIP_CONFIRM" "$GENERATE_SCRIPT" "$EXTERNAL_MODEL" 3<&0 << 'PYEOF'
+import json, sys, subprocess, os, tempfile, hashlib
+from pathlib import Path
+from urllib.parse import urlsplit
+
+sys.stdin = os.fdopen(3)
 
 config_file = sys.argv[1]
 project_filter = sys.argv[2] if sys.argv[2] else None
 unified_message = sys.argv[3] if sys.argv[3] else None
-dry_run = sys.argv[4] == "True"
-auto_push = sys.argv[5] == "True"
-skip_confirm = sys.argv[6] == "True"
+dry_run = sys.argv[4] == "true"
+auto_push = sys.argv[5] == "true"
+skip_confirm = sys.argv[6] == "true"
 generate_script = sys.argv[7]
+external_model = sys.argv[8] == "true" and not dry_run
+failures = []
+if external_model and not os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+    external_model = False
+    print("未配置外部模型凭据，使用本地规则；没有发送代码。")
+if external_model:
+    destination = urlsplit(os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com"))
+    print(f"外部模型已显式选择：{destination.scheme}://{destination.hostname}；后续生成消息时将尝试发送截断 diff 与提交上下文。")
+
+def snapshot():
+    def git(*args):
+        return subprocess.check_output(["git", *args])
+    paths = sorted(set(git("ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "-z").split(b"\0")) | set(git("diff", "--cached", "--name-only", "-z").split(b"\0")))
+    paths = [os.fsdecode(p) for p in paths if p]
+    digest = hashlib.sha256()
+    for args in [("rev-parse", "HEAD"), ("symbolic-ref", "HEAD"), ("status", "--porcelain=v1", "-z", "--untracked-files=all"), ("diff", "--cached", "--binary"), ("diff", "--binary")]:
+        digest.update(git(*args))
+    for name in paths:
+        path = Path(name)
+        digest.update(os.fsencode(name) + b"\0")
+        if path.is_symlink():
+            digest.update(os.fsencode(os.readlink(path)))
+        elif path.is_file():
+            digest.update(path.read_bytes())
+        elif path.exists():
+            raise ValueError("不支持批量暂存目录或子模块: " + name)
+    return paths, digest.hexdigest()
 
 with open(config_file) as f:
     config = json.load(f)
@@ -74,7 +107,7 @@ msg_min_length = config.get("commit_message_subject_min_length", 50)
 msg_max_length = config.get("commit_message_subject_max_length", 300)
 
 # 过滤项目
-targets = [p for p in projects if not project_filter or project_filter in p["name"]]
+targets = [p for p in projects if not project_filter or project_filter == p["name"]]
 if not targets:
     print(f"❌ 没有匹配的项目: {project_filter}")
     sys.exit(1)
@@ -95,6 +128,7 @@ for p in targets:
     h_max = p.get("header_max_length", header_max_length)
 
     if not os.path.isdir(path):
+        failures.append(name + ": missing-directory")
         print(f"⚠️  跳过（目录不存在）: {path}")
         continue
 
@@ -108,25 +142,35 @@ for p in targets:
     log_result = subprocess.run(["git", "log", "--oneline", "-10"], capture_output=True, text=True)
     recent = log_result.stdout.strip()
 
-    # 扫描改动
-    status_result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-    lines = [l for l in status_result.stdout.strip().splitlines() if l.strip()]
-
-    if not lines:
+    try:
+        paths, frozen = snapshot()
+    except (subprocess.CalledProcessError, ValueError) as error:
+        failures.append(name + ": snapshot-failed")
+        print(f"❌ {name}: {error}")
+        continue
+    if not paths:
         print(f"  {name} ({branch}): 无改动，跳过")
         continue
-
-    # 收集文件列表
-    files = []
-    for line in lines:
-        status = line[:2].strip()
-        fname = line[3:].strip()
-        files.append((status, fname))
+    files = [("review", fname) for fname in paths]
 
     # 获取 diff
     diff_staged = subprocess.run(["git", "diff", "--staged"], capture_output=True, text=True)
     diff_unstaged = subprocess.run(["git", "diff"], capture_output=True, text=True)
     diff_text = diff_staged.stdout + "\n" + diff_unstaged.stdout
+    # git diff omits untracked contents; include their additions in the same preview.
+    for raw_name in subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "-z"]).split(b"\0"):
+        if not raw_name:
+            continue
+        addition = subprocess.run(["git", "diff", "--no-index", "--", os.devnull, os.fsdecode(raw_name)], capture_output=True, text=True, errors="replace")
+        if addition.returncode not in (0, 1):
+            failures.append(name + ": untracked-diff-failed")
+            break
+        diff_text += "\n" + addition.stdout
+    else:
+        addition = None
+    if addition is not None:
+        print(f"❌ {name}: 未跟踪文件预览失败，跳过")
+        continue
     if len(diff_text) > 8000:
         diff_text = diff_text[:8000] + "\n...(diff truncated)"
 
@@ -137,6 +181,8 @@ for p in targets:
         "convention": convention,
         "header_max_length": h_max,
         "files": files,
+        "paths": paths,
+        "snapshot": frozen,
         "diff": diff_text,
         "recent_commits": recent,
     })
@@ -145,8 +191,8 @@ for p in targets:
         print(f"    近期 commits: {len(recent.splitlines())} 条")
 
 if not plans:
-    print("\n✅ 所有项目都是干净的，没有东西需要提交。")
-    sys.exit(0)
+    print("\n❌ 存在未完成的仓库扫描。" if failures else "\n✅ 所有项目都是干净的，没有东西需要提交。")
+    sys.exit(1 if failures else 0)
 
 # --- Step1: 推导跨项目统一 scope ---
 # 从各项目分支名提取建议 scope
@@ -213,8 +259,9 @@ for plan in plans:
         env["CHANGED_FILES_COUNT"] = str(num_files)
         env["CHANGED_LINES_COUNT"] = str(num_lines)
 
+        command = ["bash", generate_script] + (["--external-model"] if external_model else [])
         result = subprocess.run(
-            [generate_script, tmp_path, name, convention, rules_text, recent, branch],
+            [*command, tmp_path, name, convention, rules_text, recent, branch],
             capture_output=True, text=True, timeout=30,
             env=env
         )
@@ -246,7 +293,7 @@ for plan in plans:
 
 if dry_run:
     print("\n🔍 dry-run 模式，不执行提交。")
-    sys.exit(0)
+    sys.exit(1 if failures else 0)
 
 # --- Step4: 确认 ---
 if not skip_confirm:
@@ -271,14 +318,22 @@ for plan in plans:
     os.chdir(path)
     print(f"📂 [{name}]")
 
-    # git add
-    subprocess.run(["git", "add", "-A"], check=True)
-    print(f"   ✓ git add -A")
+    # Recheck the approved snapshot before touching the real index.
+    try:
+        if snapshot()[1] != plan["snapshot"]:
+            raise ValueError("预览后仓库发生变化，请重新审阅")
+        subprocess.run(["git", "--literal-pathspecs", "add", "--all", "--", *plan["paths"]], check=True)
+    except (subprocess.CalledProcessError, ValueError) as error:
+        failures.append(name + ": stage-failed")
+        print(f"   ❌ {error}")
+        continue
+    print("   ✓ 已暂存审阅路径")
 
     # git commit
     commit_result = subprocess.run(["git", "commit", "-m", msg], capture_output=True, text=True)
     if commit_result.returncode != 0:
         err = commit_result.stderr.strip() or commit_result.stdout.strip()
+        failures.append(name + ": commit-failed (保留暂存供检查)")
         print(f"   ❌ commit 失败:")
         print(f"   {err}")
         continue
@@ -293,9 +348,13 @@ for plan in plans:
         if push_result.returncode == 0:
             print(f"   ✓ git push origin {branch}")
         else:
+            failures.append(name + ": committed, push-failed")
             print(f"   ⚠️  push 失败: {push_result.stderr.strip()}")
 
     print()
 
+if failures:
+    print("❌ 未全部完成：" + "; ".join(failures))
+    sys.exit(1)
 print("✅ 全部完成！")
 PYEOF

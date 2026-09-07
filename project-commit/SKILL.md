@@ -1,6 +1,6 @@
 ---
 name: project-commit
-description: 批量代码提交工作流。当用户说"提交代码"、"提交"、"commit代码"、"commit code"、"推代码"等提交相关指令时触发。扫描 projects.json 中配置的 Git 项目，AI 根据 diff 和项目提交规范生成 Conventional Commits 格式的 commit message，用户确认后批量提交。支持指定单个项目提交、查看改动、提交并推送等变体。项目列表和提交规范通过 projects.json 配置，不在技能中硬编码。
+description: 按配置仓库生成并审阅提交计划，确认准确范围后批量提交。用于多仓提交、提交预览或已授权的推送。
 agent_created: true
 ---
 
@@ -103,17 +103,11 @@ bash $SKILL_DIR/scripts/scan_projects.sh
 bash $SKILL_DIR/scripts/scan_projects.sh --diff
 ```
 
-### 方式三：配置 Claude Code API（可选）
+### 方式三：显式外部模型生成
 
-在 `~/.zshrc` 中配置，commit message 改为调用 Anthropic API 生成：
+默认使用脚本内本地规则；也可直接传 `--message`。只有用户已授权把本次代码发送到明确服务时，给 helper 或批量脚本传 `--external-model`，通过受控进程环境提供认证。先说明目标服务、模型及将发送的截断 diff/提交上下文；不在 shell 配置、历史或报告存凭据。
 
-```bash
-export ANTHROPIC_AUTH_TOKEN="<your-anthropic-api-key>"
-export ANTHROPIC_BASE_URL="https://api.anthropic.com"
-export ANTHROPIC_DEFAULT_SONNET_MODEL="claude-sonnet-4-20250514"
-```
-
-不设则使用 WorkBuddy 内置 AI 生成，两种模式自动切换。
+`--dry-run` 即使同时指定 `--external-model` 也只做本地预览。外部调用不可用时回退本地规则，输出的 message 仍需审阅，不把 token 存在当作自动切换条件。
 
 ## 工作流（AI 执行指南）
 
@@ -150,7 +144,7 @@ cd <project_path> && git log --oneline -10
 若多个项目在同一主题下均有改动，**强制复用同一个 scope**（优先使用各项目分支名推导结果，若分支名一致则直接使用）。
 
 **4. 生成 commit message**
-调用 `generate_commit_msg.sh`，传入：diff、项目名、项目提交规范、通用规则（`commit_rules`）、近期 commits。
+默认本地生成；只有已授权向指定服务发送本次代码时，给 `generate_commit_msg.sh` 或 `commit_all.sh` 显式传 `--external-model`。环境里存在 token 不授权外发；`--dry-run` 始终禁用外部调用。发送内容为最多约 8000 字符 diff、提交规范与近期提交/分支上下文。调用 `generate_commit_msg.sh`，传入：diff、项目名、项目提交规范、通用规则（`commit_rules`）、近期 commits。
 
 注意：
 - header（`type(scope): subject` 整行）不得超过 100 字符
@@ -180,7 +174,7 @@ cd <project_path> && git log --oneline -10
 用户确认后，对每个项目执行：
 
 ```bash
-cd <project_path> && git add -A && git commit -m "<commit_message>"
+cd <project_path> && git --literal-pathspecs add --all -- <已审阅路径> && git commit -m "<commit_message>"
 ```
 
 若用户要求推送，则在 commit 后追加 `git push origin <branch>`。
@@ -199,13 +193,17 @@ cd <project_path> && git add -A && git commit -m "<commit_message>"
 |------|------|------|
 | `scan_projects.sh` | 扫描项目 git 状态 | 自动读取 `projects.json`，支持 `--diff`、`--project` |
 | `generate_commit_msg.sh` | 从 diff 生成 commit message | 接收 diff + 项目名 + 项目提交规范，输出 commit message |
-| `commit_all.sh` | 全流程一键提交 | 读取配置 → 扫描 → 生成 → 确认 → 提交，支持 `--dry-run`、`--push`、`--project`、`--message` |
+| `commit_all.sh` | 全流程一键提交 | 读取配置 → 扫描 → 生成 → 确认 → 提交，支持 `--dry-run`、`--push`、`--project`（精确名称）、`--message`、`--external-model` |
 
 ## 注意事项
 
-- 提交前务必让用户确认 commit message，不要跳过确认步骤
+- 提交前确认当前范围和 message 已获批准；已有批准持续有效，非交互 `--yes` 不另造授权
 - 如果 git commit 失败（如 pre-commit hook 失败），展示错误信息并询问用户如何处理
 - 不要使用 `--no-verify` 跳过 hooks，除非用户明确要求
 - 不要使用 `--amend` 修改已有提交，除非用户明确要求
-- untracked 文件（新文件）也需要包含在提交中（`git add -A`）
+- 只有本次已审阅的 untracked 文件才包含在提交中（`git --literal-pathspecs add --all -- <已审阅路径>`）
 - **新增/移除项目或修改路径，只需编辑 `projects.json`，无需改动脚本**
+
+## 执行范围与完成
+
+先展示并批准每仓准确路径、分支、message 和是否 push；包含无关文件时缩小计划，不能使用整仓脚本代替按路径提交。执行前重新核对预览快照；有变化则停止该仓并重新审阅。`--yes` 仅用于当前快照已获批准的非交互执行。脚本逐仓报告失败、返回非零；commit 失败保留暂存供检查，push 失败明确区分本地已提交与远端未完成。不自动 reset、amend 或重试外部写入。

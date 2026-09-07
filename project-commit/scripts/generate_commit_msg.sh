@@ -24,6 +24,12 @@
 
 set -uo pipefail
 
+EXTERNAL_MODEL=false
+if [ "${1:-}" = "--external-model" ]; then
+  EXTERNAL_MODEL=true
+  shift
+fi
+
 DIFF_FILE="${1:-}"
 PROJECT_NAME="${2:-}"
 PROJECT_CONVENTION="${3:-}"
@@ -90,8 +96,9 @@ if [ -n "$CURRENT_BRANCH" ]; then
 fi
 
 # --- 方式1: Claude Code API ---
-if [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
+if [ "$EXTERNAL_MODEL" = true ] && [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
   BASE_URL="${ANTHROPIC_BASE_URL:-https://api.anthropic.com}"
+  echo "外部模型已显式选择；向配置服务发送截断 diff、规范和提交上下文。" >&2
   MODEL="${ANTHROPIC_DEFAULT_SONNET_MODEL:-claude-sonnet-4-20250514}"
 
   EXTRA_TEXT=""
@@ -137,7 +144,7 @@ Diff:
 ${DIFF_TEXT}
 \`\`\`"
 
-  RESPONSE=$(curl -s -X POST "${BASE_URL}/v1/messages" \
+  RESPONSE=$(curl --max-time 20 -s -X POST "${BASE_URL}/v1/messages" \
     -H "x-api-key: ${ANTHROPIC_AUTH_TOKEN}" \
     -H "anthropic-version: 2023-06-01" \
     -H "content-type: application/json" \

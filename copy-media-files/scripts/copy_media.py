@@ -11,7 +11,7 @@ copy_media.py —— 并发递归复制媒体文件（按扩展名过滤），�
 
 参数说明：
     source            源目录（会被递归扫描）。路径含空格请用引号包起来
-    -o, --output      目标子目录名（位于当前工作目录下），默认 arw_files
+    -o, --output      目标路径（相对路径基于当前工作目录，绝对路径按显式目标使用），默认 arw_files
                       支持嵌套，如 2026/firstHalfYear
     -e, --ext         要复制的扩展名，可多次指定。默认 arw
                       不区分大小写，前导点可省略。例：-e arw -e hif
@@ -86,7 +86,7 @@ def main() -> int:
     parser.add_argument("source", help="源目录（会递归扫描）")
     parser.add_argument(
         "-o", "--output", default="arw_files",
-        help="目标子目录名（位于当前工作目录下），默认 arw_files。支持嵌套如 2026/firstHalfYear",
+        help="目标路径（相对路径基于当前工作目录，绝对路径按显式目标使用），默认 arw_files。支持嵌套如 2026/firstHalfYear",
     )
     parser.add_argument(
         "-w", "--workers", type=int, default=16,
@@ -97,6 +97,8 @@ def main() -> int:
         help="要复制的文件扩展名（不区分大小写，可多次指定）。默认 arw。例如 -e arw -e hif",
     )
     args = parser.parse_args()
+    if args.workers < 1:
+        parser.error("workers 必须 >= 1")
     exts = {e.lower().lstrip(".") for e in (args.ext or ["arw"])}
 
     source = Path(args.source).expanduser().resolve()
@@ -104,7 +106,7 @@ def main() -> int:
         print(f"错误：源目录不存在或不是目录：{source}", file=sys.stderr)
         return 1
 
-    dest_root = (Path.cwd() / args.output).resolve()
+    dest_root = Path(args.output).expanduser().resolve()
     try:
         dest_root.relative_to(source)
         print(
