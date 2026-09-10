@@ -166,6 +166,85 @@ class SkillScripts(unittest.TestCase):
         self.assertEqual((target / 'test_1.arw').read_text(), 'original')
         self.assertEqual((source / 'test.arw').read_text(), 'original')
 
+    @staticmethod
+    def _png_bytes():
+        import struct
+        import zlib
+
+        def chunk(tag, data):
+            return (struct.pack('>I', len(data)) + tag + data
+                    + struct.pack('>I', zlib.crc32(tag + data) & 0xffffffff))
+
+        return (b'\x89PNG\r\n\x1a\n'
+                + chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 6, 0, 0, 0))
+                + chunk(b'IDAT', zlib.compress(b'\x00\xff\x00\x00\xff'))
+                + chunk(b'IEND', b''))
+
+    @staticmethod
+    def _png_chunks(data):
+        import struct
+        chunks, i = [], 8
+        while i + 12 <= len(data):
+            length = struct.unpack('>I', data[i:i + 4])[0]
+            chunks.append((data[i + 4:i + 8], data[i:i + 12 + length]))
+            i += 12 + length
+        return chunks
+
+    def test_image_copy_is_lossless_and_hash_unique(self):
+        import struct
+        import sys
+
+        scripts = ROOT / 'batch-image-compress/scripts'
+        sys.path.insert(0, str(scripts))
+        import pf_client  # noqa: E402  (bundled module)
+
+        self.assertEqual(pf_client.plan_chunks(1), [(0, 0, 1)])
+        self.assertEqual(pf_client.plan_chunks(5, 2), [(0, 0, 2), (1, 2, 4), (2, 4, 5)])
+        with self.assertRaises(ValueError):
+            pf_client.plan_chunks(0)
+
+        work = self.root / 'img'
+        work.mkdir()
+        png = work / 'icon.png'
+        original = self._png_bytes()
+        png.write_bytes(original)
+        r = self.run_cmd(['python3', str(scripts / 'unique_copy.py'), str(png)])
+        self.assertEqual(r.returncode, 0, r.stderr)
+        copied = (work / 'icon.unique.png').read_bytes()
+        self.assertNotEqual(original, copied)
+        self.assertEqual(copied[:8], original[:8])
+        before = dict((tag, body) for tag, body in self._png_chunks(original))
+        after = dict((tag, body) for tag, body in self._png_chunks(copied))
+        self.assertEqual(before[b'IDAT'], after[b'IDAT'])
+        self.assertEqual(after[b'IEND'][-8:], before[b'IEND'][-8:])
+        self.assertIn(b'tEXt', after)
+        self.assertNotIn(b'tEXt', before)
+
+        webp = work / 'icon.webp'
+        body = b'VP8 ' + struct.pack('<I', 4) + b'abcd'
+        webp.write_bytes(b'RIFF' + struct.pack('<I', 4 + len(body)) + b'WEBP' + body)
+        self.assertEqual(
+            self.run_cmd(['python3', str(scripts / 'unique_copy.py'), str(webp)]).returncode, 0)
+        mutated = (work / 'icon.unique.webp').read_bytes()
+        self.assertEqual(mutated[:4], b'RIFF')
+        self.assertEqual(mutated[12:16], b'JUNK')
+        self.assertEqual(mutated[-len(body):], body)
+        self.assertEqual(struct.unpack('<I', mutated[4:8])[0] + 8, len(mutated))
+
+        jpeg = work / 'icon.jpg'
+        jpeg.write_bytes(b'\xff\xd8' + b'\xff\xd9')
+        self.assertEqual(
+            self.run_cmd(['python3', str(scripts / 'unique_copy.py'), str(jpeg)]).returncode, 0)
+        mutated = (work / 'icon.unique.jpg').read_bytes()
+        self.assertEqual(mutated[:4], b'\xff\xd8\xff\xfe')
+        self.assertEqual(mutated[-2:], b'\xff\xd9')
+
+        bad = work / 'note.txt'
+        bad.write_text('not an image')
+        r = self.run_cmd(['python3', str(scripts / 'unique_copy.py'), str(bad)])
+        self.assertEqual(r.returncode, 1)
+        self.assertIn('仅支持 PNG / JPEG / WebP', r.stderr)
+
     def test_daily_partial_failure_is_incomplete(self):
         fake = self.root / 'bin'; fake.mkdir()
         actual_git = shutil.which('git')

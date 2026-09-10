@@ -17,6 +17,7 @@ An agent skill is a packaged capability that a compatible AI coding agent can in
 | Skill | Description |
 |---|---|
 | [`copy-media-files`](./copy-media-files) | Concurrently copy photos/videos (ARW/HIF/JPG/...) from a source directory (e.g. an SD card's DCIM folder) to a target subdirectory, recursively, preserving the relative folder structure. Filters by file extension. |
+| [`batch-image-compress`](./batch-image-compress) | 批量把本地图片上传到 PixelForge 在线压缩站点（或同构服务）压缩，按档位/格式处理后下载到新目录并保留相对结构。默认走服务端接口，`--mode ui` 可用真实 Chrome 驱动网页。含 md5 秒传、5 分钟 TTL、merge 504 等服务端坑位的绕过方案。 |
 
 ### Workflow
 
