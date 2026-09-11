@@ -23,7 +23,7 @@ An agent skill is a packaged capability that a compatible AI coding agent can in
 
 | Skill | Description |
 |---|---|
-| [`long-task`](./long-task) | Run a long, multi-stage task without losing state to context limits: decompose into phases, persist progress to a file under `.claude/progress/`, delegate heavy searches to subagents, and resume cleanly after `/clear` or auto-compact. Ships an optional `PreCompact` backup hook. |
+| [`long-task`](./long-task) | 长任务或上下文切换时保存最小 checkpoint，记录版本、证据和下一步；恢复前核对实时状态。仅按需落盘，Claude 会话备份为可选分支。 |
 | [`project-commit`](./project-commit) | Batch-commit code across multiple Git repos with one command. Scans all configured projects, generates Conventional Commits messages from diffs (via built-in AI or Anthropic API), shows a summary table for confirmation, then commits. Supports `--dry-run`, `--push`, `--project <name>`, and `--message "<msg>"`. Config via local `projects.json` (never committed). |
 | [`sync-as-built-docs`](./sync-as-built-docs) | 审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。 |
 
