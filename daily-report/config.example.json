@@ -11,6 +11,27 @@
   ],
   "output_dir": "/path/to/your/daily-report/output/directory",
   "file_naming": "MMDD.md",
+  "_maintenance": "每次生成日报后回填本文件：repos / workItems.gitlab.project_paths / workItems.reference_map / workItems.branch_work_items / dedup 五段。真实项目名只写在这里，受版本控制的 SKILL.md 与 references/* 只写泛化示例。",
+  "dedup": {
+    "_comment": "跨分支去重的事实依据。生成日报时读取本段判定代表侧，不要硬编码分支名。",
+    "integration_branches": [
+      "your-integration-branch"
+    ],
+    "_integration_branches_note": "集成/重放分支（cherry-pick 的目的地）：patch-id 相同时优先保留不在这些分支上的一侧，其次已合主干，再次 author date 靠前。",
+    "same_remote_paths": [
+      [
+        "/path/to/your/repo-A",
+        "/path/to/your/repo-A-verify"
+      ]
+    ],
+    "_same_remote_paths_note": "同远端多 checkout 组：组内目录指向同一远端，采集时每组只计一份，避免 --all 重复计数。"
+  },
+  "_pending": {
+    "_comment": "待确认项，确认后移入 workItems.branch_work_items。ID 与标题必须来自实际查询或用户确认，不靠猜。",
+    "branch_work_items": [
+      {"branch": "your-branch", "candidate_id": null, "note": "为何待确认"}
+    ]
+  },
   "workItems": {
     "_comment": "是否生成「Work Item 关联」章节；stages 可增删改，branch_stage_hints 为分支名→阶段启发式",
     "enabled": false,
@@ -20,9 +41,10 @@
         "/path/to/your/repo-1": "group/repo-1",
         "/path/to/your/repo-2": "group/repo-2"
       },
+      "_project_paths_note": "只列「有本地 checkout 的仓库 → 其自身项目」。提交正文引用的 Work Item 可能属于别的项目，甚至属于没有本地 checkout 的反馈/需求项目，那种情况不写进本段，按引用里写明的全路径直接拼 URL。",
       "url_template": "{base_url}/{project}/-/work_items/{id}"
     },
-    "id_patterns": ["#\\d+", "&\\d+", "[A-Z][A-Z0-9]+-\\d+"],
+    "id_patterns": ["#\\d+", "&\\d+", "[A-Z][A-Z0-9]+-\\d+", "[a-z]+/[A-Za-z0-9_.-]+#\\d+", "work_items/\\d+"],
     "stages": ["需求梳理", "技术设计", "开发中", "测试中", "验收中", "待上线", "已上线"],
     "branch_stage_hints": {
       "requirement": "需求梳理", "req": "需求梳理", "spec": "需求梳理",
@@ -34,6 +56,42 @@
     "merged_to_main_stage": "已合入主干",
     "released_branch_hints": ["release/", "hotfix/"],
     "blocked_hints": ["blocked", "WIP"],
-    "branch_work_items": {}
+    "reference_map": {
+      "_comment": "提交正文里的 Work Item 引用 → 实际所属项目与编号，是「提交级」归属，优先级高于 branch_work_items。裸 #NN 会跨项目重号，默认落本仓项目是错的。confidence：explicit=正文直接给出全路径或 Refs 尾注；title_match=正文描述与该编号标题逐字对上；thematic=仅主题相符、待确认。",
+      "entries": [
+        {
+          "token": "#12",
+          "wi": "group/project-b#12",
+          "title": "该编号的真实标题（须实查，不得凭印象填写）",
+          "state": "OPEN",
+          "confidence": "title_match",
+          "evidence": "commit 用短号；同批另有 commit 正文自带 group/project-b#12 全路径，据此确定本批裸编号的项目归属"
+        }
+      ],
+      "_collisions_note": "已知同号不同项目碰撞，禁止按数字复用：同一 #9 在 group/repo-1 与 group/repo-2 各有不同含义，查号时不要只查本仓项目就下结论。",
+      "_non_work_item_refs": "正文里的 MR IID、十六进制色值、代码/样式引用都不是 Work Item，进映射前先判断。"
+    },
+    "branch_work_items": {
+      "_schema_note": "每条给 work_items（多张票据时用列表）与 stage。project 为 Work Item 所属项目，跨项目时必填；缺省才按「拥有该分支的本地目录」经 gitlab.project_paths 推导。",
+      "your-branch": {
+        "project": "group/repo-1",
+        "id": "25",
+        "title": "该票据的真实标题",
+        "stage": "开发中"
+      },
+      "your-multi-ticket-branch": {
+        "project": "group/repo-1",
+        "work_items": ["group/feedback-tickets#11", "group/feedback-tickets#12"],
+        "stage": "已合入主干",
+        "note": "一个分支对应多张票据时用列表；票据主体在无本地 checkout 的反馈项目里"
+      }
+    },
+    "unmapped": {
+      "_comment": "已核实不挂 Work Item 的分支，记下来避免下次重复排查或硬凑编号。",
+      "branches": [
+        {"branch": "your-standalone-docs-branch", "note": "commit 正文与分支内文档均无 Work Item 引用，确认为独立分支"}
+      ],
+      "_branch_name_trap": "名字骗人的分支：名里带某主题但实测不含该主题的任何提交（用 git merge-base --is-ancestor 校验），勿按名字归拢。"
+    }
   }
 }

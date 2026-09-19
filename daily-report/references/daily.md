@@ -72,7 +72,7 @@
 
 > ⚠ 阻塞：[#60 某需求](url) — 依赖后端接口未就绪（`WIP`）。
 
-> 注：未检测到 Work Item 引用的分支（如 `qa_cicd`、纯文档分支）归「未分类」或按 `branch_work_items` 映射补全；如需准确阶段请配置 GitLab token 后对接 API。
+> 注：未检测到 Work Item 引用的分支（如集成/重放分支、纯文档分支）归「未分类」或按 `branch_work_items` 映射补全；如需准确阶段请配置 GitLab token 后对接 API。
 
 ## 数据概览
 

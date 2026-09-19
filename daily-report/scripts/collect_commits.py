@@ -36,6 +36,14 @@ collect_commits.py —— 从一个或多个 Git 仓库收集「指定日期、�
     分组列出提交（短哈希、作者、时间、标题、正文、改动量），末尾给出合计。
     若无任何提交，给出明确提示。Claude 据此撰写日报。
 
+== 日期口径（重要） ==
+    归属日期一律取 **author date**（%aI），不取 committer date。原因：rebase /
+    cherry-pick 重放会刷新 committer date，按 committer date 归属会把旧工作
+    重复计入重放当天。
+    实现上，git 的 --since/--until 只按 committer date 预筛，因此预设日期范围会
+    前后各放宽 SLACK_DAYS 天作为预筛窗口，最终由 keep_in_half_open_range() 按
+    author date 精确裁剪到 [start, end)。用 --since/--until 自定义时不做二次裁剪。
+
 == 退出码 ==
     0  完整采集（可以零提交）
     1  覆盖不全或采集失败
@@ -55,7 +63,14 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 # 正常的 commit message 里不会出现这两个字节，因此可以安全地切分。
 RS = "\x1e"
 US = "\x1f"
-GIT_FORMAT = f"--pretty=format:{RS}%H{US}%an{US}%ae{US}%cI{US}%s{US}%b{US}"
+# 用 %aI（author date）而非 %cI（committer date）：rebase / cherry-pick 重放会刷新
+# committer date，若按 committer date 归属，会把旧工作重复计入重放当天。
+GIT_FORMAT = f"--pretty=format:{RS}%H{US}%an{US}%ae{US}%aI{US}%s{US}%b{US}"
+
+# git 的 --since/--until 只按 committer date 预筛。为了不丢掉「author date 在范围内、
+# committer date 被重放推到范围外」的提交，预筛窗口前后各放宽 SLACK_DAYS 天，
+# 再用 keep_in_half_open_range() 按 author date 精确裁剪。
+SLACK_DAYS = 7
 
 
 def run_git(repo: str, extra: list[str]) -> subprocess.CompletedProcess:
@@ -144,7 +159,7 @@ def resolve_timezone(name: str | None) -> tuple[tzinfo, str]:
 def resolve_range(
     args: argparse.Namespace,
 ) -> tuple[str | None, str | None, str, datetime | None, datetime | None, str]:
-    """返回 git 边界、标签、可复核时间边界和时区标签。"""
+    """返回 git 边界（已按 SLACK_DAYS 放宽）、标签、精确 author 边界和时区标签。"""
     tz, timezone_label = resolve_timezone(args.timezone)
     now = datetime.now(tz)
 
@@ -153,6 +168,11 @@ def resolve_range(
 
     def iso(d: datetime) -> str:
         return d.isoformat(timespec="seconds")
+
+    def widen(start: datetime, end: datetime) -> tuple[str, str]:
+        """git --since/--until 用放宽窗口，精确裁剪交给 keep_in_half_open_range。"""
+        slack = timedelta(days=SLACK_DAYS)
+        return iso(start - slack), iso(end + slack)
 
     if args.since or args.until:
         label = f"自定义（since={args.since or '-'}, until={args.until or '-'}）"
@@ -164,17 +184,21 @@ def resolve_range(
             raise ValueError(f"无效日期：{args.date}，应为 YYYY-MM-DD") from exc
         start = datetime.combine(target, datetime.min.time(), tzinfo=tz)
         end = start + timedelta(days=1)
-        return iso(start), iso(end), f"指定日期（{target}）", start, end, timezone_label
+        g_since, g_until = widen(start, end)
+        return g_since, g_until, f"指定日期（{target}）", start, end, timezone_label
     if args.yesterday:
         start = midnight(now) - timedelta(days=1)
         end = midnight(now)
-        return iso(start), iso(end), f"昨天（{start:%Y-%m-%d}）", start, end, timezone_label
+        g_since, g_until = widen(start, end)
+        return g_since, g_until, f"昨天（{start:%Y-%m-%d}）", start, end, timezone_label
     if args.days:
         start = midnight(now) - timedelta(days=args.days - 1)
-        return iso(start), iso(now), f"最近 {args.days} 天（{start:%Y-%m-%d} 起）", start, now, timezone_label
+        g_since, g_until = widen(start, now)
+        return g_since, g_until, f"最近 {args.days} 天（{start:%Y-%m-%d} 起）", start, now, timezone_label
     # 默认：今天
     start = midnight(now)
-    return iso(start), iso(now), f"今天（{now:%Y-%m-%d}）", start, now, timezone_label
+    g_since, g_until = widen(start, now)
+    return g_since, g_until, f"今天（{now:%Y-%m-%d}）", start, now, timezone_label
 
 
 def keep_in_half_open_range(
@@ -190,7 +214,8 @@ def keep_in_half_open_range(
 
 
 def build_log_cmd(args: argparse.Namespace, since: str | None, until: str | None) -> list[str]:
-    cmd = ["log", "--date=format:%Y-%m-%d %H:%M", GIT_FORMAT, "--numstat"]
+    # since/until 是放宽后的预筛窗口；最终归属按 author date 在 Python 侧裁剪。
+    cmd = ["log", GIT_FORMAT, "--numstat"]
     if not args.no_all:
         cmd.append("--all")
     if not args.merges:
@@ -256,7 +281,10 @@ def main() -> int:
             f"- **精确边界**：[{range_start.isoformat(timespec='seconds')}, "
             f"{range_end.isoformat(timespec='seconds')})"
         )
+        if since or until:
+            lines.append(f"- **git 预筛窗口（较精确边界前后各放宽 {SLACK_DAYS} 天）**：`--since {since} --until {until}`")
     lines.append(f"- **时区**：{timezone_label}")
+    lines.append("- **日期口径**：author date（非 committer date；重放不改归属）")
     lines.append(f"- **作者过滤**：{('、'.join(authors)) if authors else '全部作者'}")
     lines.append(f"- **分支范围**：{'仅当前分支' if args.no_all else '所有分支 (--all)'}")
     lines.append(f"- **合并提交**：{'包含' if args.merges else '已排除'}")
