@@ -13,7 +13,9 @@ description: >-
 使用已有配置；仅缺少配置或需调整来源/输出时读取 [配置说明](references/configuration.md)。`<skill-dir>` 是当前已加载 SKILL.md 的父目录，配置也在该目录中，不依赖调用时 cwd。
 
 - 日报：读取 [日报流程与模板](references/daily.md)。
-- 周报/周功能总结：读取 [周报流程与模板](references/weekly.md)，不把日报的逐分支表机械重复一遍。
+- 周报/周功能总结：读取 [周报流程与模板](references/weekly.md)。**素材优先取本周日报**（逐日读、按功能域归并；本周缺日报的日子先补日报），不重新采集、不逐笔翻代码、不把日报的逐分支表机械重复一遍。
+- 一页纸小结（向上汇报口径）：用户说「简短总结下」「写进周报的总结」「汇报用的版本」时，读 [周报流程与模板](references/weekly.md) 的《周报·一页纸小结》一节——只写「事 + 进度」，不写笔数 / 分支名 / MR 号 / 风险；统计范围按 `config.report_scope`。
+- 公司周报（公司固定模板）：用户说「生成公司周报」「按公司模板出一份」「给公司的周报」时，读 [周报流程与模板](references/weekly.md) 的《公司周报》一节——从**同期个人周报投影**，**另出一份**（不改个人周报），**只落本地文件、不写在线文档**。
 - 用户只要求口头总结时直接回复；已有明确文件输出要求时才写到指定位置。GitLab Work Item 默认只做来源关联，写 tracker 需独立授权。
 
 ## 使用方式
@@ -33,6 +35,8 @@ python3 "<skill-dir>/scripts/collect_commits.py" <repo...> \
   --date YYYY-MM-DD --timezone Asia/Shanghai -a '<author-pattern>'
 ```
 
+脚本**默认就等价于 `--all`**（覆盖所有分支，这正是本工作流需要的）：它**没有 `--all` 开关**，多写一个 `--all` 会被 argparse 拒绝（`error: unrecognized arguments: --all`），只有反向的 `--no-all`。别照抄旧示例里的 `--all`。
+
 脚本输出的精确半开区间 `[当天 00:00, 次日 00:00)` 是提交归属的事实边界；不得把区间外提交写进当天。周末归并只改变日报展示归属，原始提交仍按各自自然日分别采集并保留边界。
 
 ## 保持 config.json 同步
@@ -46,7 +50,10 @@ python3 "<skill-dir>/scripts/collect_commits.py" <repo...> \
 3. 本次新出现的 Work Item 归属，按下面的优先级回填，**ID 与标题必须来自实际查询或提交正文，绝不靠猜**：
    - 先补「提交级」的 `workItems.reference_map`：把提交正文里出现过的引用 token（如 `#12`、`group/project-a#12`）解析成实际所属项目与编号，带上 `title` / `state` / `confidence` / `evidence`。
    - 再补「分支级」的 `workItems.branch_work_items`。每条要写 `work_items`（一个分支对应多张票据时用列表）与 `stage`；**`project` 字段跨项目时必填**，缺省时才按「拥有该分支的本地目录」经 `gitlab.project_paths` 推导（见注意事项里的跨项目条目）。
+   - **同名分支存在于多个仓时要按仓分别映射**：`branch_work_items` 的键只有分支名，装不下「同一分支名在两个仓各对应一张不同票据」的情况。此时用 `work_items` 列表，**每一项都显式带 `project`**，例如同一分支名下并列 `{project: group/repo-a, id: 16}` 与 `{project: group/repo-b, id: 37}`，并在 `note` 里写清「按仓分别映射」。
+   - **一条分支可能承载多条互不相关的主题**：分支级映射只是「该分支主要归属」的补充，**不等于该分支的每一笔提交都属这张票**。同期既有票据内工作、又有无票的独立收尾时，报告里的章节与归拢表要**按提交主题拆开**，别把整条分支的笔数都算给那张票。
    - 核实后确认**不挂 Work Item** 的分支记进 `workItems.unmapped.branches`，避免下次重复排查或硬凑编号。
+   - 每次新增票据后**同步更新 `reference_map._collisions_note`**：新号若与既有号在别的项目里重复，必须把「同一个裸编号 N 处含义」补进去，否则下次查号会按错项目下结论。
    - 仍无法确认的，放进 `_pending.branch_work_items` 并把 `candidate_id` 留 `null`，同时在日报的「需要留意」里列为待确认——不要写看起来合理的假条目。
 4. 回填后校验 JSON 合法性：`python3 -c "import json;json.load(open('config.json'))"`。
 
@@ -61,7 +68,8 @@ python3 "<skill-dir>/scripts/collect_commits.py" <repo...> \
 - 采集务必用 `git log --all`，否则会漏掉 worktree / 未合入 feature 分支的提交。
 - **日期口径必须用 author date（`%aI`）**：`git log --since/--until` 只按 committer date 预筛，而 rebase / cherry-pick 重放会刷新 committer date。采集脚本已改用 `%aI` 归属，并把预筛窗口前后各放宽 `SLACK_DAYS`（7 天）后在 Python 侧按 author date 精确裁剪。**不要把 `%aI` 改回 `%cI`**，也不要把 git 原始 `--since/--until` 结果直接当归属日期，否则重放当天会把旧工作重复计入（实测一个窗口内 58 个唯一提交有 14 笔 committer date ≠ author date）。
 - **跨分支同改动要去重**：`--all` 会让同一改动落在集成分支上的 cherry-pick 副本各算一次。用 `git patch-id --stable` 比对：patch-id 相同只计一份，并在报告的去重说明里逐组列出「保留 / 去重」的 hash 对；**同名同目的但 patch-id 不同（改动量有差）要各计一笔**，不能当重复删掉。
-  - **代表侧（保留哪一侧）选择规则，按优先级**：① 保留**不在集成/重放分支上**的一侧——集成分支是 cherry-pick 的目的地，取它会把工作记到集成分支的语境里；② 两侧都不在集成分支时，保留**已合入主干**的那侧；③ 仍并列时保留 **author date 靠前**的。抽象原则是「保留实现分支、去重重放分支」，**具体对比的是分支名而不是时间先后**（实测曾因先按时间排序而误选集成侧）。
+  - **代表侧（保留哪一侧）选择规则，按优先级**：① 保留**不在集成/重放分支上**的一侧——集成分支是 cherry-pick 的目的地，取它会把工作记到集成分支的语境里；② 两侧都不在集成分支时，保留**已合入主干**的那侧；③ 若一侧被分支/远端承载、另一侧只存在于 worktree 的 detached HEAD 或 reflog（`git branch -a --contains` 为空、`git log --all` 之外的引用），保留**被分支承载的一侧**——此时不要按时间先后选到没有任何 ref 指向的那一份；④ 仍并列时保留 **author date 靠前**的。抽象原则是「保留实现分支、去重重放分支」，**具体对比的是分支名而不是时间先后**（实测曾因先按时间排序而误选集成侧）。
+  - 排查这类「无 ref 的副本」：`git branch -a --contains <sha>` 为空但 `git show <sha>` 能跑，通常是 **worktree 的 detached HEAD**（`git worktree list` 会显示）——两份 sha 的 patch-id 相同、父提交相同时尤其要确认哪一份才是被推送的那笔。
   - 若集成/重放分支名不固定，把该类分支列进 `config.json` 的 `dedup.integration_branches`（见「保持 config.json 同步」一节），生成报告时按该列表判定代表侧，**不要硬编码分支名**。
 - 自动检测周目录结构（第一周 / 第二周 / 第三周 …），日报写入对应周子目录。**若目标周目录不存在，直接创建**（路径形如 `<output_dir>/YYYY/<M>/第N周`，月份**无前导零**、周次用中文序数，如 `2026/9/第三周`）；写文件前先确认目录存在。
 - **同一远端多个 checkout 要去重**：两个本地目录可能指向**同一个远端仓库**（常见于「主仓 + 独立验证仓」、或仓库改名后留下旧 checkout），`--all` 会让同一批提交各算一次；采集后按「唯一远端」只计一份，并在报告中注明。**若配置的仓库不在同一个父目录下**（例如一部分在 `~/Code/公司/`、另一部分在 `~/Code/个人/`），必须显式把路径都传进采集脚本，否则会静默跳过。
