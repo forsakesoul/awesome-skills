@@ -1,6 +1,6 @@
 ## 日报生成流程
 
-1. **收集提交**: 使用 `scripts/collect_commits.py --date YYYY-MM-DD --timezone <zone>` 对用户指定仓库（未限定时使用配置仓库）按精确自然日、`--all` 和作者条件采集；保留脚本回显的时区与半开区间
+1. **收集提交**: 使用 `scripts/collect_commits.py --date YYYY-MM-DD --timezone <zone>` 对用户指定仓库（未限定时使用配置仓库）按精确自然日、作者条件采集；脚本**默认覆盖所有分支**（等价 `--all`，且没有 `--all` 开关，多写会报 `unrecognized arguments`；只有 `--no-all`）保留脚本回显的时区与半开区间
 2. **获取详情**: 复用采集脚本输出的 committer ISO 时间、提交信息及完整 subject/body，避免混用 author date，并据此提取 Work Item ID
 3. **分支归属**: 对每个提交执行 `git branch -r --contains <hash>` 确定所属分支，取第一个非 HEAD 分支
 4. **代码统计**: 执行 `git log --numstat --format=""` 统计增删行数
