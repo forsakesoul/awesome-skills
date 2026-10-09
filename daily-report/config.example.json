@@ -11,6 +11,21 @@
   ],
   "output_dir": "/path/to/your/daily-report/output/directory",
   "file_naming": "MMDD.md",
+  "daily_variants": {
+    "_comment": "日报每次产出两份，写入同一目录。enabled=false 时退回只出人读版。",
+    "enabled": true,
+    "human": {
+      "enabled": true,
+      "file_naming": "MMDD.md",
+      "note": "人读版：只写「事 + 进度」，40–70 行；含「需要处理」区（本区可点名 MR / 工单编号），不写 hash / 笔数 / 文件数 / 分支名 / ahead-behind。"
+    },
+    "detail": {
+      "enabled": true,
+      "file_naming": "MMDD.agent.md",
+      "note": "明细版：全量事实档案（速查索引表 + 逐笔明细 + 分支状态 + 票据对照 + 数据概览 + 去重与采集说明），是周报的素材源。"
+    },
+    "_generation_order": "先生成明细版，再由明细版投影人读版；两份共用同一份事实，条数不要求对应。"
+  },
   "_maintenance": "每次生成日报后回填本文件：repos / workItems.gitlab.project_paths / workItems.reference_map / workItems.branch_work_items / dedup 五段。真实项目名只写在这里，受版本控制的 SKILL.md 与 references/* 只写泛化示例。",
   "dedup": {
     "_comment": "跨分支去重的事实依据。生成日报时读取本段判定代表侧，不要硬编码分支名。",
