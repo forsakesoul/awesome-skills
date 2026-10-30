@@ -1,11 +1,13 @@
 ---
 name: long-task
-description: 为长任务、上下文切换或模型切换保存职责与最小 checkpoint，恢复时核对实时状态；用户要求压缩上下文时，在 Herdr 中的 Codex、Claude、Pi 原会话执行原生压缩并恢复原任务状态。
+description: 为长任务、上下文切换或执行会话更换保存职责与最小 checkpoint，接手前核对旧执行和实时状态；用户要求压缩上下文时，在 Herdr 中的 Codex、Claude、Pi 原会话执行原生压缩并恢复原任务状态。
 ---
 
 # 长任务续接
 
 用户明确要求压缩当前上下文时，读取[自动压缩与恢复](references/auto-compact.md)，执行“保存 → 原生压缩 → 恢复原角色与任务状态”。不因长任务、模型切换或用量阈值自行启动压缩；用户未要求压缩时沿用下方普通 checkpoint 流程。
+
+用户要求停止旧会话并换执行会话、跨宿主接手或回退对话后续接时，读取[会话更换交接](references/session-handoff.md)。它先核对旧执行是否停止与新执行的职责；同一原会话压缩仍走上面的压缩流程。
 
 复用当前任务计划；只有状态无法由对话和 Git 恢复、或用户要求落盘时，在任务工作目录保存 checkpoint。记录目标/验收、仓库/分支/SHA、已完成事项、关键决策、阻塞与下一条证据或命令；不存凭据、Cookie、Token、可重放 URL 或原始日志。需要文件时读取 [checkpoint 模板](references/checkpoint.md)。
 

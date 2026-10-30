@@ -23,7 +23,7 @@ An agent skill is a packaged capability that a compatible AI coding agent can in
 
 | Skill | Description |
 |---|---|
-| [`long-task`](./long-task) | 保存职责、版本、证据和下一步；用户要求压缩时，可在 Herdr 的 Codex / Claude / Pi 原会话中自动原生压缩并恢复原任务状态。普通 checkpoint 和 Claude 原始备份各自按需使用。 |
+| [`long-task`](./long-task) | 保存职责、版本、证据和下一步；换执行会话时核对旧执行与接手边界，用户要求压缩时在 Herdr 的 Codex / Claude / Pi 原会话中原生压缩并恢复。普通 checkpoint 和 Claude 原始备份各自按需使用。 |
 | [`project-commit`](./project-commit) | Batch-commit code across multiple Git repos with one command. Scans all configured projects, generates Conventional Commits messages from diffs (via built-in AI or Anthropic API), shows a summary table for confirmation, then commits. Supports `--dry-run`, `--push`, `--project <name>`, and `--message "<msg>"`. Config via local `projects.json` (never committed). |
 | [`sync-as-built-docs`](./sync-as-built-docs) | 审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。 |
 
