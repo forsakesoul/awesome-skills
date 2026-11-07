@@ -18,7 +18,7 @@ collect_commits.py —— 从一个或多个 Git 仓库收集「指定日期、�
     --yesterday       昨天全天（昨天 00:00 至今天 00:00）
     --days N          最近 N 天（含今天，从 N-1 天前的 00:00 起）
     --date YYYY-MM-DD 精确自然日 [00:00, 次日 00:00)
-    --timezone ZONE   IANA 时区名，如 Asia/Shanghai（默认系统本地时区）
+    --timezone ZONE   IANA 时区名（默认固定 Asia/Shanghai 北京时间，不随本机时区漂移）
     --since STR       原样传给 git 的 --since（一旦指定则覆盖上面的预设）
     --until STR       原样传给 git 的 --until
 
@@ -66,6 +66,9 @@ US = "\x1f"
 # 用 %aI（author date）而非 %cI（committer date）：rebase / cherry-pick 重放会刷新
 # committer date，若按 committer date 归属，会把旧工作重复计入重放当天。
 GIT_FORMAT = f"--pretty=format:{RS}%H{US}%an{US}%ae{US}%aI{US}%s{US}%b{US}"
+
+# 采集时区默认固定为北京时间：日报归属口径不随本机时区漂移（见 resolve_timezone）。
+DEFAULT_TIMEZONE = "Asia/Shanghai"
 
 # git 的 --since/--until 只按 committer date 预筛。为了不丢掉「author date 在范围内、
 # committer date 被重放推到范围外」的提交，预筛窗口前后各放宽 SLACK_DAYS 天，
@@ -147,13 +150,22 @@ def parse_commits(raw: str) -> list[dict]:
 
 
 def resolve_timezone(name: str | None) -> tuple[tzinfo, str]:
+    """
+    采集时区默认固定为北京时间（Asia/Shanghai），**不跟随本机时区**。
+
+    原因：日报/周报的日期归属是业务口径，出差或把系统时区切到美西后，
+    「今天」若按本机日期算会整体错一天（洛杉矶 10-20 01:00 = 北京 10-20 16:00，
+    而洛杉矶 10-20 10:00 已是北京 10-21 01:00），提交会被归到错误的自然日。
+    因此默认值写死，只有显式 --timezone 才覆盖。
+    """
+    zone = name or DEFAULT_TIMEZONE
+    try:
+        tz = ZoneInfo(zone)
+    except ZoneInfoNotFoundError as exc:
+        raise ValueError(f"未知时区：{zone}") from exc
     if name:
-        try:
-            return ZoneInfo(name), name
-        except ZoneInfoNotFoundError as exc:
-            raise ValueError(f"未知时区：{name}") from exc
-    local = datetime.now().astimezone().tzinfo or timezone.utc
-    return local, str(local)
+        return tz, name
+    return tz, f"{zone}（默认固定，不随本机时区）"
 
 
 def resolve_range(
@@ -252,7 +264,11 @@ def main() -> int:
     p.add_argument("--yesterday", action="store_true", help="昨天全天")
     p.add_argument("--days", type=int, help="最近 N 天（含今天）")
     p.add_argument("--date", help="精确自然日（YYYY-MM-DD）")
-    p.add_argument("--timezone", help="IANA 时区名，如 Asia/Shanghai（默认系统本地时区）")
+    p.add_argument(
+        "--timezone",
+        default=None,
+        help=f"IANA 时区名（默认 {DEFAULT_TIMEZONE}，固定北京时间，不随本机时区）",
+    )
     p.add_argument("--since", help="原样传给 git 的 --since（覆盖预设）")
     p.add_argument("--until", help="原样传给 git 的 --until")
     p.add_argument("--no-body", action="store_true", help="不输出提交正文")
@@ -269,6 +285,18 @@ def main() -> int:
         since, until, range_label, range_start, range_end, timezone_label = resolve_range(args)
     except ValueError as exc:
         p.error(str(exc))
+
+    # 防呆：Apple Git 的 --author 按 BRE 解析，未转义的 '|' 会被当字面量，
+    # 结果是 0 条提交、退出码 0、毫无报错——最容易被误读成「当天真的没提交」。
+    for a in args.author or []:
+        if "|" in a and "\\|" not in a:
+            print(
+                f"警告：--author {a!r} 含未转义的 '|'。Apple Git 按 BRE 解析，"
+                f"'|' 会被当作字面量而匹配不到任何提交（静默返回 0 条、退出码 0）。"
+                f"多个作者请改用多次 -a，例如 `-a a -a b`。",
+                file=sys.stderr,
+            )
+
     log_cmd = build_log_cmd(args, since, until)
 
     authors = args.author or []

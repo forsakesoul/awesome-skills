@@ -2,7 +2,10 @@
   "_comment": "这是模板文件。复制为 config.json 后填入你的实际路径和配置。config.json 不会被提交到 git 仓库。",
   "author": {
     "_comment": "git log --author 匹配的作者名/邮箱，支持正则",
-    "patterns": ["your-name", "your-email@example.com"]
+    "patterns": [
+      "your-name",
+      "your-email@example.com"
+    ]
   },
   "repos": [
     "/path/to/your/repo-1",
@@ -26,6 +29,19 @@
     },
     "_generation_order": "先生成明细版，再由明细版投影人读版；两份共用同一份事实，条数不要求对应。"
   },
+  "todo_ledger": {
+    "enabled": true,
+    "dir": "/path/to/your/notes/todo/daily-ledger",
+    "filename": "{YYYY}-{MM}.md",
+    "archive_after_days": 180,
+    "report_only": [
+      "new",
+      "changed",
+      "blocking"
+    ],
+    "_note": "跨日累积的「需要处理」台账，按月拆文件。生成日报前先读当前月份文件：新项按编号水位取号（编号不可变、不回收）、有变化的更新「最后提及」、做完的改 ☑ 划删除线并写完成日期。日报「需要处理」只输出 report_only 三类，每条带 T-xx；票号与 MR 号写成 [短名#id](真实地址)，不写裸编号。其余一行汇总「另有 N 项历史待办未动」。",
+    "_dir_note": "按月一个文件（`{YYYY}-{MM}.md`），当前月为工作文件、往月只读归档。换月时把上月未完成的 ☐ 行整行搬入新文件（编号与「首次」不变），旧文件对应行删除并留一行「已结转」说明；☑/⊘ 留在原月文件。编号水位跨月连续、永不回收。台账是本机运营数据，真实路径写在被 .gitignore 忽略的 config.json 里，不要提交。"
+  },
   "_maintenance": "每次生成日报后回填本文件：repos / workItems.gitlab.project_paths / workItems.reference_map / workItems.branch_work_items / dedup 五段。真实项目名只写在这里，受版本控制的 SKILL.md 与 references/* 只写泛化示例。",
   "dedup": {
     "_comment": "跨分支去重的事实依据。生成日报时读取本段判定代表侧，不要硬编码分支名。",
@@ -44,7 +60,11 @@
   "_pending": {
     "_comment": "待确认项，确认后移入 workItems.branch_work_items。ID 与标题必须来自实际查询或用户确认，不靠猜。",
     "branch_work_items": [
-      {"branch": "your-branch", "candidate_id": null, "note": "为何待确认"}
+      {
+        "branch": "your-branch",
+        "candidate_id": null,
+        "note": "为何待确认"
+      }
     ]
   },
   "workItems": {
@@ -57,20 +77,57 @@
         "/path/to/your/repo-2": "group/repo-2"
       },
       "_project_paths_note": "只列「有本地 checkout 的仓库 → 其自身项目」。提交正文引用的 Work Item 可能属于别的项目，甚至属于没有本地 checkout 的反馈/需求项目，那种情况不写进本段，按引用里写明的全路径直接拼 URL。",
-      "url_template": "{base_url}/{project}/-/work_items/{id}"
+      "url_template": "{base_url}/{project}/-/issues/{id}",
+      "merge_request_template": "{base_url}/{project}/-/merge_requests/{id}",
+      "abbreviations": {
+        "_comment": "票号短前缀 → 项目全路径。日报/周报/台账里写 `proj-a#7`、`proj-b!101` 时按本表解析项目再拼真实链接；解析不到就退回全路径写法，不要猜。",
+        "proj-a": "group-a/project-a",
+        "proj-b": "group-b/project-b"
+      },
+      "_url_note": "链接里的 ID 必须实测（API 返回或提交正文），不许推测；拼完抽样打开确认没跳到别的项目或 404。多项目重号很常见，短名不能省。"
     },
-    "id_patterns": ["#\\d+", "&\\d+", "[A-Z][A-Z0-9]+-\\d+", "[a-z]+/[A-Za-z0-9_.-]+#\\d+", "work_items/\\d+"],
-    "stages": ["需求梳理", "技术设计", "开发中", "测试中", "验收中", "待上线", "已上线"],
+    "id_patterns": [
+      "#\\d+",
+      "&\\d+",
+      "[A-Z][A-Z0-9]+-\\d+",
+      "[a-z]+/[A-Za-z0-9_.-]+#\\d+",
+      "work_items/\\d+"
+    ],
+    "stages": [
+      "需求梳理",
+      "技术设计",
+      "开发中",
+      "测试中",
+      "验收中",
+      "待上线",
+      "已上线"
+    ],
     "branch_stage_hints": {
-      "requirement": "需求梳理", "req": "需求梳理", "spec": "需求梳理",
-      "design": "技术设计", "rfc": "技术设计",
-      "feature/": "开发中", "fix/": "开发中", "dev/": "开发中", "refactor/": "开发中",
-      "test": "测试中", "qa": "测试中", "verify": "测试中",
-      "release/": "待上线", "hotfix/": "待上线", "staging": "待上线"
+      "requirement": "需求梳理",
+      "req": "需求梳理",
+      "spec": "需求梳理",
+      "design": "技术设计",
+      "rfc": "技术设计",
+      "feature/": "开发中",
+      "fix/": "开发中",
+      "dev/": "开发中",
+      "refactor/": "开发中",
+      "test": "测试中",
+      "qa": "测试中",
+      "verify": "测试中",
+      "release/": "待上线",
+      "hotfix/": "待上线",
+      "staging": "待上线"
     },
     "merged_to_main_stage": "已合入主干",
-    "released_branch_hints": ["release/", "hotfix/"],
-    "blocked_hints": ["blocked", "WIP"],
+    "released_branch_hints": [
+      "release/",
+      "hotfix/"
+    ],
+    "blocked_hints": [
+      "blocked",
+      "WIP"
+    ],
     "reference_map": {
       "_comment": "提交正文里的 Work Item 引用 → 实际所属项目与编号，是「提交级」归属，优先级高于 branch_work_items。裸 #NN 会跨项目重号，默认落本仓项目是错的。confidence：explicit=正文直接给出全路径或 Refs 尾注；title_match=正文描述与该编号标题逐字对上；thematic=仅主题相符、待确认。",
       "entries": [
@@ -96,7 +153,10 @@
       },
       "your-multi-ticket-branch": {
         "project": "group/repo-1",
-        "work_items": ["group/feedback-tickets#11", "group/feedback-tickets#12"],
+        "work_items": [
+          "group/feedback-tickets#11",
+          "group/feedback-tickets#12"
+        ],
         "stage": "已合入主干",
         "note": "一个分支对应多张票据时用列表；票据主体在无本地 checkout 的反馈项目里"
       }
@@ -104,7 +164,10 @@
     "unmapped": {
       "_comment": "已核实不挂 Work Item 的分支，记下来避免下次重复排查或硬凑编号。",
       "branches": [
-        {"branch": "your-standalone-docs-branch", "note": "commit 正文与分支内文档均无 Work Item 引用，确认为独立分支"}
+        {
+          "branch": "your-standalone-docs-branch",
+          "note": "commit 正文与分支内文档均无 Work Item 引用，确认为独立分支"
+        }
       ],
       "_branch_name_trap": "名字骗人的分支：名里带某主题但实测不含该主题的任何提交（用 git merge-base --is-ancestor 校验），勿按名字归拢。"
     }

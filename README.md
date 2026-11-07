@@ -34,7 +34,7 @@ An agent skill is a packaged capability that a compatible AI coding agent can in
 
 | Skill | Description |
 |---|---|
-| [`daily-report`](./daily-report) | 根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结：按作者过滤，汇总工作价值、变更范围与结果，可按阶段关联 GitLab Work Item。 |
+| [`daily-report`](./daily-report) | 根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结：按北京时间与作者采集，一个分支一节，汇总工作价值、变更范围与结果，可关联 GitLab Work Item；“需要处理”由跨日待办台账投影，周报可出三列表格的一页纸小结。 |
 
 ### Knowledge
 

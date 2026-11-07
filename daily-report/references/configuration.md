@@ -53,7 +53,7 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - **repos**：Git 仓库路径列表
 - **output_dir**：日报输出目录（自动检测周子目录结构）
 - **file_naming**：日报文件命名格式（如 `MMDD.md` 生成 `0616.md`）
-- **workItems.enabled**：是否生成「Work Item 关联」章节（默认 `false`，负责人侧为 `true`）
+- **workItems.enabled**：是否生成「Work Item 关联」章节（默认 `false`，需要向负责人汇报票据进展时设为 `true`）
 - **workItems.gitlab.base_url / project_paths / url_template**：拼出 Work Item 链接。`url_template` 中 `{base_url}`、`{project}`（取 project_paths 映射）、`{id}`（提取到的纯 ID）会被替换；GitLab 若用 issue 而非 work item，可改为 `{base_url}/{project}/-/issues/{id}`
 - **workItems.id_patterns**：从分支名与 commit message 提取 Work Item ID 的正则列表（默认匹配 `#123` / `&123` / `PROJ-123`）
 - **workItems.stages**：阶段有序列表，可增删改（默认 7 个：需求梳理→技术设计→开发中→测试中→验收中→待上线→已上线；另「已合入主干」由 `merged_to_main_stage` 控制）
