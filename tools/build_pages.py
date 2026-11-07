@@ -145,13 +145,13 @@ def page():
 <script>
 const COPY = {copy_txt}, langs = ["en", "zh"];
 let cur = "en";
-function pick(l) {{
+function pick(l, keep) {{
   if (!langs.includes(l)) l = "en";
   cur = l;
   document.documentElement.lang = l === "zh" ? "zh-CN" : l;
   document.querySelectorAll("[data-l]").forEach((e) => e.classList.toggle("on", e.dataset.l === l));
   document.querySelectorAll(".langs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.set === l)));
-  history.replaceState(null, "", "#" + l);
+  if (!keep) history.replaceState(null, "", "#" + l);
 }}
 async function copy(btn, text, label) {{
   await navigator.clipboard.writeText(text);
@@ -161,9 +161,11 @@ async function copy(btn, text, label) {{
 document.querySelectorAll(".langs button").forEach((b) => b.addEventListener("click", () => pick(b.dataset.set)));
 document.querySelectorAll(".cp").forEach((b) => b.addEventListener("click", () => copy(b, b.closest(".term").querySelector("pre").textContent, COPY[cur][0])));
 document.querySelectorAll(".chip").forEach((b) => {{ const label = b.textContent; b.addEventListener("click", () => copy(b, b.dataset.copy, label)); }});
-addEventListener("hashchange", () => {{ const l = location.hash.slice(1); if (langs.includes(l)) pick(l); }});
-const h = location.hash.slice(1);
-pick(langs.includes(h) ? h : (navigator.language || "en").slice(0, 2).toLowerCase());
+// A fragment is a language code (#zh) or ends with one (#install-zh): show that language and keep the fragment.
+function langOf(h) {{ const m = h.match(/(?:^|-)([a-z]{{2}})$/); return m && langs.includes(m[1]) ? m[1] : null; }}
+addEventListener("hashchange", () => {{ const h = location.hash.slice(1), l = langOf(h); if (l) pick(l, h !== l); }});
+const h = location.hash.slice(1), hl = langOf(h);
+pick(hl || (navigator.language || "en").slice(0, 2).toLowerCase(), !!hl && h !== hl);
 </script>
 </body>
 </html>
