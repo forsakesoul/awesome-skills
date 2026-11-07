@@ -204,6 +204,15 @@ class AutoCompact(unittest.TestCase):
         self.assertEqual(len(self.calls()), 2)
         self.assertEqual(self.calls()[0][-1], '/compact')
 
+    def test_claude_local_slash_command_is_not_new_input(self):
+        # The TUI records /model, /compact ... as a user turn, but no agent turn starts.
+        self.configure('claude')
+        self.start()
+        self.append(self.message('user', '<command-name>/model</command-name>\n<command-message>model</command-message>'))
+        self.ready()
+        self.wait('restore_sent')
+        self.assertEqual(len(self.calls()), 2)
+
     def test_fresh_automatic_compaction_is_reused(self):
         self.start()
         self.append({'type': 'compacted', 'timestamp': datetime.now(timezone.utc).isoformat(), 'payload': {'message': 'automatic'}})

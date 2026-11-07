@@ -5,6 +5,7 @@ Sources are never modified. Every output is H.264 + AAC MP4 with faststart and i
 """
 import argparse
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -59,10 +60,16 @@ def compress(src, dst, args):
     if size <= args.max_size and not args.max_height and src.suffix.lower() == ".mp4":
         shutil.copy2(src, dst)
         return {"crf": None, "note": "already under target size, copied unchanged"}
-    for crf in range(CRF_START, CRF_MAX + 1, CRF_STEP):
+    crf = CRF_START
+    while True:
         encode(src, dst, crf, args)
-        if dst.stat().st_size <= args.max_size:
+        got = dst.stat().st_size
+        if got <= args.max_size:
             return {"crf": crf}
+        if crf >= CRF_MAX:
+            break
+        # x264 rule of thumb: +6 CRF roughly halves the size, so jump to the estimate instead of stepping.
+        crf = min(CRF_MAX, crf + max(CRF_STEP, math.ceil(6 * math.log2(got / args.max_size))))
     dst.unlink(missing_ok=True)
     raise RuntimeError(f"still over {human(args.max_size)} at CRF {CRF_MAX}; lower the resolution with --max-height")
 

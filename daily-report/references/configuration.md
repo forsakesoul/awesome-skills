@@ -25,10 +25,10 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
   "workItems": {
     "enabled": true,
     "gitlab": {
-      "base_url": "https://git.flam.dev",
+      "base_url": "https://gitlab.example.com",
       "project_paths": {
-        "/path/to/your/repo-1": "intelligent-computing/repo-1",
-        "/path/to/your/repo-2": "intelligent-computing/repo-2"
+        "/path/to/your/repo-1": "group/repo-1",
+        "/path/to/your/repo-2": "group/repo-2"
       },
       "url_template": "{base_url}/{project}/-/work_items/{id}"
     },
@@ -63,3 +63,18 @@ cp "<skill-dir>/config.example.json" "<skill-dir>/config.json"
 - **workItems.blocked_hints**：命中即标记「⚠ 阻塞」的分支/commit 关键字
 - **workItems.branch_work_items**：手动兜底映射，格式 `"分支名(去 origin/)": {"id": "123", "title": "...", "stage": "开发中"}`，用于分支名/commit 未带 Work Item 引用时补全
 
+
+## 每次生成后回填
+
+生成日报后按下面的顺序回填 `config.json`，ID 与标题必须来自实际查询或提交正文，不靠猜：
+
+1. 本次实际采集的仓库路径若与 `repos` 不一致（新增 / 改名 / 移除），先更新 `repos`，再同步 `workItems.gitlab.project_paths`。
+2. 本次识别出的集成 / 重放类分支记进 `dedup.integration_branches`，同远端多 checkout 的目录组记进 `dedup.same_remote_paths`。
+3. 新出现的 Work Item 归属按优先级回填：
+   - 先补提交级的 `workItems.reference_map`：把正文里出现过的引用 token（`#12`、`group/project-a#12`）解析成实际所属项目与编号，带 `title` / `state` / `confidence` / `evidence`。
+   - 再补分支级的 `workItems.branch_work_items`。每条写 `work_items`（一个分支对应多张票据时用列表）与 `stage`；跨项目时 `project` 必填，缺省才按拥有该分支的本地目录经 `gitlab.project_paths` 推导。
+   - 同名分支存在于多个仓时按仓分别映射：`branch_work_items` 的键只有分支名，用 `work_items` 列表且每项显式带 `project`，并在 `note` 里写清"按仓分别映射"。
+   - 核实后确认不挂 Work Item 的分支记进 `workItems.unmapped.branches`，避免下次重复排查或硬凑编号。
+   - 新增票据后同步更新 `reference_map._collisions_note`：新号若与既有号在别的项目里重复，把"同一个裸编号 N 处含义"补进去。
+   - 仍无法确认的放进 `_pending.branch_work_items`，`candidate_id` 留 `null`，并在日报"需要留意"里列为待确认；不写看起来合理的假条目。
+4. 校验：`python3 -c "import json;json.load(open('config.json'))"`。

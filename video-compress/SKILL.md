@@ -23,7 +23,7 @@ python3 "<skill-dir>/scripts/compress_video.py" <source> \
 |---|---|---|
 | `source` | 视频文件，或递归扫描的目录 | 必填 |
 | `-o, --output` | 输出目录，不能在源目录内 | `<source>-compressed` |
-| `--max-size` | 每个文件的目标大小（如 `5MB`、`800K`），从 CRF 20 起每次 +2 直到放得下，最高 36 | — |
+| `--max-size` | 每个文件的目标大小（如 `5MB`、`800K`），从 CRF 20 起按超出比例估算下一个 CRF 再编码，直到放得下，最高 36 | — |
 | `--crf` | 固定画质，越小越清晰、文件越大；与 `--max-size` 二选一 | 23 |
 | `--max-height` | 高度上限，只缩小不放大 | 不缩放 |
 | `--audio-bitrate` | AAC 码率 | `128k` |

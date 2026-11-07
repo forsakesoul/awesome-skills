@@ -120,6 +120,8 @@ def messages(record, kind):
         message = record.get('message', {})
         role = message.get('role')
         content = text(message.get('content'))
+        if kind == 'claude' and role == 'user' and content.lstrip().startswith('<command-name>'):
+            return '', ''  # a local slash command (/model, /compact ...) is handled by the TUI and starts no agent turn
         final = role == 'assistant' and (kind != 'pi' or message.get('stopReason') == 'stop')
         return content if role == 'user' else '', content if final else ''
     return '', ''

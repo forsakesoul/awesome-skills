@@ -53,7 +53,7 @@ class VideoCompress(unittest.TestCase):
     def test_max_size_fits_and_keeps_streams_and_source(self):
         before = digest(self.big)
         limit = self.big.stat().st_size // 3
-        r = self.run_script(self.big, "-o", self.dir, "--max-size", f"{limit / 1024:.0f}K", "--preset", "veryfast")
+        r = self.run_script(self.big, "-o", self.dir, "--max-size", str(limit), "--preset", "veryfast")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         out = self.dir / "big.mp4"
         self.assertLessEqual(out.stat().st_size, limit)
