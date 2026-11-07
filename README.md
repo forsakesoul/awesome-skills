@@ -2,7 +2,7 @@
 
 A curated collection of AI agent skills — both originals and useful ones found in the wild.
 
-精选的 AI agent skills 合集，包含自制的与从社区收录的实用 skill。
+精选的 AI agent skill 合集，有自制的，也有从社区收录的。
 
 🌐 **Website / 网站**: https://forsakesoul.github.io/awesome-skills/
 
@@ -18,7 +18,7 @@ An agent skill is a packaged capability that a compatible AI coding agent can in
 
 | Skill | Description |
 |---|---|
-| [`copy-media-files`](./copy-media-files) | Concurrently copy photos/videos (ARW/HIF/JPG/...) from a source directory (e.g. an SD card's DCIM folder) to a target subdirectory, recursively, preserving the relative folder structure. Filters by file extension. |
+| [`copy-media-files`](./copy-media-files) | 按扩展名并发、递归地把照片或视频复制到目标目录，保留源文件、相对目录结构和元数据，重名自动加后缀不覆盖。适用于 SD 卡导入和媒体归档。 |
 | [`batch-image-compress`](./batch-image-compress) | 批量把本地图片上传到 PixelForge 在线压缩站点（或同构服务）压缩，按档位/格式处理后下载到新目录并保留相对结构。默认走服务端接口，`--mode ui` 可用真实 Chrome 驱动网页。含 md5 秒传、5 分钟 TTL、merge 504 等服务端坑位的绕过方案。 |
 | [`video-compress`](./video-compress) | 用 ffmpeg 把视频压到新目录：按目标大小（压到 N MB 以内，逐级提高 CRF）或固定画质压缩，可限制最大分辨率，源文件不动、ffprobe 核对结果。附场景规则（如 GitHub 内嵌视频压到 5 MB 以内）。 |
 
@@ -27,14 +27,14 @@ An agent skill is a packaged capability that a compatible AI coding agent can in
 | Skill | Description |
 |---|---|
 | [`long-task`](./long-task) | 保存职责、版本、证据和下一步；换执行会话时核对旧执行与接手边界，用户要求压缩时在 Herdr 的 Codex / Claude / Pi 原会话中原生压缩并恢复。普通 checkpoint 和 Claude 原始备份各自按需使用。 |
-| [`project-commit`](./project-commit) | Batch-commit code across multiple Git repos with one command. Scans all configured projects, generates Conventional Commits messages from diffs (via built-in AI or Anthropic API), shows a summary table for confirmation, then commits. Supports `--dry-run`, `--push`, `--project <name>`, and `--message "<msg>"`. Config via local `projects.json` (never committed). |
+| [`project-commit`](./project-commit) | 扫描 `projects.json` 中配置的多个仓库，生成提交计划，确认后按已审阅的路径批量提交，可选推送。提交信息默认按本地规则生成；只有用户授权并显式加 `--external-model` 时才调用外部模型。支持 `--dry-run`、`--project`、`--message`。 |
 | [`sync-as-built-docs`](./sync-as-built-docs) | 审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。 |
 
 ### Productivity
 
 | Skill | Description |
 |---|---|
-| [`daily-report`](./daily-report) | Generate a work daily report ("工作日报") from today's Git commits across one or more repos, filtered by operator/author. A helper script collects the day's commits (subject, body, files, +/− stats); Claude then summarizes them into a clean, value-focused report. Supports today / yesterday / last-N-days and multiple repos & authors. |
+| [`daily-report`](./daily-report) | 根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结：按作者过滤，汇总工作价值、变更范围与结果，可按阶段关联 GitLab Work Item。 |
 
 ### Knowledge
 

@@ -9,15 +9,17 @@ agent_created: true
 ## 安装
 
 ```bash
-# 1. 复制技能到 WorkBuddy skills 目录
-cp -r project-commit ~/.workbuddy/skills/
+# 1. 安装技能
+npx skills add forsakesoul/awesome-skills -g --skill project-commit
 
-# 2. 创建本地配置（不会被 git 追踪）
-cp projects.example.json projects.json
+# 2. 在技能目录里创建本地配置（不会被 git 追踪）
+cp "<skill-dir>/projects.example.json" "<skill-dir>/projects.json"
 
 # 3. 编辑 projects.json，填入你的实际项目路径
 #    项目名保持 project-a / project-b / project-c 即可（脱敏）
 ```
+
+`<skill-dir>` 是当前 SKILL.md 所在目录，不要假设某个 runner 的固定安装路径。
 
 ## 配置文件
 
@@ -66,11 +68,11 @@ cp projects.example.json projects.json
 
 ## 使用方式
 
-### 方式一：WorkBuddy 对话触发（推荐）
+### 方式一：对话触发（推荐）
 
 | 说什么 | 会发生什么 |
 |--------|-----------|
-| **提交代码** / **提交** / **commit** | 扫描配置的所有项目 → AI 生成 commit message → 你确认 → 批量提交 |
+| **提交代码** / **提交** / **commit** | 扫描配置的所有项目 → 生成 commit message → 你确认 → 批量提交 |
 | **只提交 project-b** | 只扫描并提交指定项目 |
 | **提交并推送** / **commit and push** | 提交后自动 push |
 | **看看改动** / **有什么改动** | 只展示改动和生成的 message，不提交 |
@@ -79,7 +81,7 @@ cp projects.example.json projects.json
 ### 方式二：终端直接调用脚本
 
 ```bash
-SKILL_DIR=~/.workbuddy/skills/project-commit
+SKILL_DIR="<skill-dir>"
 
 # 预览改动（不提交）
 bash $SKILL_DIR/scripts/commit_all.sh --dry-run
@@ -149,10 +151,7 @@ cd <project_path> && git log --oneline -10
 注意：
 - header（`type(scope): subject` 整行）不得超过 100 字符
 - 若描述过长，使用短 header + body 格式（header 与 body 之间空一行）
-- **message 长度与改动规模成正比**：文件数和代码行数越多，描述应越详细
-  - 小改动（≤3 文件，≤50 行）→ 50-80 字
-  - 中等改动（4-8 文件，50-200 行）→ 80-180 字
-  - 大改动（≥9 文件或 >200 行）→ 180-300 字
+- **message 长度与改动规模成正比**，按上方「提交规范」的分档执行
 - body 内容应包含：改了哪些模块/文件、为什么改、有什么影响
 - 可配置项：`commit_message_subject_min_length`（默认 50）、`commit_message_subject_max_length`（默认 300）
 
