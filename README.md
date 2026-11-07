@@ -4,6 +4,8 @@ A curated collection of AI agent skills — both originals and useful ones found
 
 精选的 AI agent skills 合集，包含自制的与从社区收录的实用 skill。
 
+🌐 **Website / 网站**: https://forsakesoul.github.io/awesome-skills/
+
 ## What's a skill?
 
 An agent skill is a packaged capability that a compatible AI coding agent can invoke during a session. Each skill is a directory containing a `SKILL.md` (with YAML frontmatter declaring its name + description) plus any supporting scripts/examples. The agent reads the description to decide when to invoke the skill.
@@ -85,9 +87,12 @@ awesome-skills/
 ├── README.md            ← this file
 ├── LICENSE              ← MIT
 ├── .gitignore
-└── <skill-name>/        ← one directory per skill (kept flat so symlinks work)
-    ├── SKILL.md
-    └── scripts/         ← optional, scripts the skill references
+├── <skill-name>/        ← one directory per skill (kept flat so symlinks work)
+│   ├── SKILL.md
+│   └── scripts/         ← optional, scripts the skill references
+├── docs/index.html      ← GitHub Pages site, generated from the skill tables above
+├── tools/               ← page generator (build_pages.py) and its stylesheet
+└── tests/               ← python3 -m unittest discover -s tests
 ```
 
 Skills stay flat at the top level so a one-shot `ln -s` is enough. Categorisation happens in this README's table, not in nested folders.
@@ -100,7 +105,7 @@ Found a great skill or built one yourself? PRs welcome. Guidelines:
 2. **`SKILL.md` is required**, with a `name` and a `description` in YAML frontmatter
 3. **Portable paths**: resolve bundled scripts and assets relative to the skill directory; never hard-code usernames or assume a runner-specific install directory unless the skill only supports that runner
 4. **Attribution for collected skills**: if the skill comes from someone else, credit them in the `SKILL.md` body and link to the source
-5. **Add a row to the README table** under the appropriate category
+5. **Add a row to the README table** under the appropriate category, then run `python3 tools/build_pages.py` to refresh the website (tests fail if a skill is missing from the table or the page is stale)
 6. **Smoke-test before submitting** — at minimum, run the scripts from a clean checkout
 7. **Verify discovery**: run `npx skills add . --list` and fix every skipped or invalid skill before submitting
 

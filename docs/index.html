@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>awesome-skills — curated AI agent skills</title>
+<meta name="description" content="Original and collected skills for AI coding agents, installable with npx skills.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Permanent+Marker&family=Noto+Sans+SC:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.75 var(--body)}
+a{color:var(--link)}
+.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .in{max-width:1080px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px}
+.brand{font-size:24px;color:var(--fg);text-decoration:none}
+.top nav{margin-left:auto;display:flex;align-items:center;gap:10px}
+.top nav>a{color:var(--fg);text-decoration:none;font-size:15px;padding:6px 10px}
+.langs{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.langs button{font:600 13px var(--body);border:0;background:transparent;color:var(--sub);padding:6px 12px;cursor:pointer}
+.langs button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+main{max-width:1080px;margin:0 auto;padding:40px 24px 80px}
+.hero{display:grid;grid-template-columns:1fr;gap:28px;padding:24px 0 8px}
+.crumb{font:600 13px var(--mono);text-transform:uppercase;letter-spacing:2px;margin:0}
+h1{font-size:clamp(36px,6vw,64px);line-height:1.18;margin:6px 0 0}
+.lead{font-size:19px;color:var(--sub);max-width:760px;margin:0}
+.ctas{display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:999px;font-weight:700;text-decoration:none;color:var(--fg)}
+.video{display:block;width:100%;border-radius:var(--radius);background:#000;margin-top:8px}
+.note{color:var(--sub);font-size:14px;margin:10px 0 0}
+section{margin-top:72px}
+h2{font-size:clamp(26px,3.6vw,36px);margin:0 0 22px}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:26px}
+.steps li{display:grid;grid-template-columns:44px 1fr;gap:16px;align-items:start}
+.num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font:800 17px var(--mono);margin-top:2px}
+.steps p{margin:4px 0 12px}
+.term{border-radius:12px;overflow:hidden;background:var(--code);color:var(--codefg)}
+.term .bar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#ffffff0d}
+.term .bar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.term .bar i:nth-child(1){background:#ff5f57}.term .bar i:nth-child(2){background:#febc2e}.term .bar i:nth-child(3){background:#28c840}
+.term .bar span{font:12px var(--mono);opacity:.6;margin-left:6px}
+.term .bar button{margin-left:auto;font:12px var(--body);color:inherit;background:#ffffff14;border:1px solid #ffffff26;border-radius:6px;padding:2px 10px;cursor:pointer}
+.term pre{margin:0;padding:14px 18px 16px;overflow-x:auto;font:14px/1.65 var(--mono)}
+code{font-family:var(--mono);font-size:.9em}
+kbd{font:600 .85em var(--mono);border:1px solid #bdb6a3;border-bottom-width:3px;border-radius:6px;padding:1px 7px;background:#fff}
+.crew{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{border-radius:var(--radius);padding:22px}
+.card h3{margin:0 0 6px;font-size:19px}
+.card p{margin:0;color:var(--sub)}
+.tag{display:inline-block;font:600 12px var(--mono);border:1px solid currentColor;border-radius:999px;padding:0 8px;margin-left:6px;color:var(--accent);vertical-align:2px}
+.two{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
+.two p{margin:0 0 14px}
+footer{margin-top:80px;padding-top:22px;border-top:1px solid var(--line);color:var(--sub);font-size:14px}
+[data-l]{display:none}[data-l].on{display:revert}
+@media (max-width:820px){.crew,.two{grid-template-columns:1fr}.top nav>a.hide-s{display:none}}
+
+:root{--bg:#f6eedb;--fg:#1d2a44;--sub:#5a5f6b;--line:#dccfae;--accent:#c8372d;--hi:#f2c230;--card:#fbf6e8;--link:#1f5ea8;--code:#16223b;--codefg:#ebe4d1;
+--display:"ZCOOL KuaiLe","Chalkboard SE",cursive;--logo:"Permanent Marker",cursive;--body:"Noto Sans SC",-apple-system,"PingFang SC",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;--radius:14px}
+body{background-image:radial-gradient(circle at 15% 8%,#fbf5e6 0,transparent 42%),radial-gradient(circle at 92% 75%,#eedfbd 0,transparent 46%)}
+.brand{font-family:var(--logo);letter-spacing:.5px}.brand b{color:var(--accent);font-weight:400}
+h1,h2{font-family:var(--display);font-weight:400}
+h2::before{content:"";display:inline-block;width:20px;height:20px;margin-right:12px;border:3px solid var(--accent);border-radius:50%;vertical-align:-1px;box-shadow:inset 0 0 0 3px var(--bg),inset 0 0 0 6px var(--accent)}
+.hi{background:linear-gradient(transparent 55%,var(--hi) 55%);padding:0 .1em}
+.crumb{color:var(--accent)}
+.btn.primary{background:var(--hi);border:2px solid var(--fg);color:var(--fg);box-shadow:3px 3px 0 var(--fg)}
+.btn{border:2px solid var(--fg)}
+.num{background:var(--accent);color:#fff8e7;border:3px double #fff8e7;box-shadow:0 0 0 2px var(--accent)}
+.card{border:2px dashed #cbb98d;background:var(--card)}
+.card.why{background:#fffaf0;border:2px solid var(--fg);position:relative;box-shadow:5px 5px 0 var(--hi);transform:rotate(-.6deg)}
+.card.why::after{content:"";position:absolute;right:20px;top:-11px;width:72px;height:22px;background:#c8372d55;transform:rotate(4deg)}
+.video{border:2px solid var(--fg);box-shadow:6px 6px 0 var(--hi)}
+.langs button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+/* catalog cards */
+.cat{margin-top:64px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card .name{font:700 18px var(--mono);margin:0 0 8px;color:var(--fg)}
+.card .name a{color:inherit;text-decoration:none}
+.card .desc{margin:0 0 14px;color:var(--sub);font-size:15px}
+.card .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chip{font:12px var(--mono);border:1px solid var(--line);border-radius:999px;padding:3px 12px;background:var(--bg);color:var(--fg);cursor:pointer}
+.chip:hover{border-color:var(--fg)}
+.card .src{font-size:13px}
+.count{font:600 13px var(--mono);color:var(--accent);margin-left:8px;vertical-align:4px}
+@media (max-width:820px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top"><div class="in">
+  <a class="brand" href="#">awesome-<b>skills</b></a>
+  <nav><a href="https://github.com/forsakesoul/awesome-skills">GitHub</a>
+    <span class="langs" role="group" aria-label="Language"><button type="button" data-set="en">EN</button><button type="button" data-set="zh">中</button></span>
+  </nav>
+</div></div>
+<main>
+<div data-l="en">
+  <div class="hero">
+    <p class="crumb">AI agent skills · Claude Code · Codex</p>
+    <h1>Curated agent skills,<br><span class="hi">ready to install</span>.</h1>
+    <p class="lead">Original and collected skills for AI coding agents. Each one is a folder with a SKILL.md; the agent reads its description and invokes it when your request matches.</p>
+    <div class="ctas"><a class="btn primary" href="#install-en">Install</a><a class="btn" href="#skills-en">Browse skills · 8 skills</a></div>
+  </div>
+  <section id="install-en">
+    <h2>Install in three steps</h2>
+    <ol class="steps">
+      <li><span class="num">1</span><div><p>Install every skill for all your agents (user level, available in every project):</p><div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">Copy</button></div><pre>npx skills add forsakesoul/awesome-skills -g</pre></div></div></li>
+      <li><span class="num">2</span><div><p>Or pick one skill and one agent, non-interactively:</p><div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">Copy</button></div><pre>npx skills add forsakesoul/awesome-skills -g --skill video-compress --agent codex -y</pre></div></div></li>
+      <li><span class="num">3</span><div><p>Start a new agent session so it picks up the new skills. Update or remove them later with <code>npx skills update -g</code> / <code>npx skills remove &lt;name&gt; -g</code>.</p></div></li>
+    </ol>
+  </section>
+  <section id="skills-en">
+    <h2>Skills</h2>
+    <div class="cat"><h2>Media<span class="count">3</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">copy-media-files</a></p><p class="desc">Concurrently copy photos/videos (ARW/HIF/JPG/...) from a source directory (e.g. an SD card's DCIM folder) to a target subdirectory, recursively, preserving the relative folder structure. Filters by file extension.</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill copy-media-files">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">Source ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">batch-image-compress</a></p><p class="desc">批量把本地图片上传到 PixelForge 在线压缩站点（或同构服务）压缩，按档位/格式处理后下载到新目录并保留相对结构。默认走服务端接口，<code>--mode ui</code> 可用真实 Chrome 驱动网页。含 md5 秒传、5 分钟 TTL、merge 504 等服务端坑位的绕过方案。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill batch-image-compress">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">Source ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">video-compress</a></p><p class="desc">用 ffmpeg 把视频压到新目录：按目标大小（压到 N MB 以内，逐级提高 CRF）或固定画质压缩，可限制最大分辨率，源文件不动、ffprobe 核对结果。附场景规则（如 GitHub 内嵌视频压到 5 MB 以内）。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill video-compress">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">Source ↗</a></div></div></div></div><div class="cat"><h2>Workflow<span class="count">3</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">long-task</a></p><p class="desc">保存职责、版本、证据和下一步；换执行会话时核对旧执行与接手边界，用户要求压缩时在 Herdr 的 Codex / Claude / Pi 原会话中原生压缩并恢复。普通 checkpoint 和 Claude 原始备份各自按需使用。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill long-task">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">Source ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">project-commit</a></p><p class="desc">Batch-commit code across multiple Git repos with one command. Scans all configured projects, generates Conventional Commits messages from diffs (via built-in AI or Anthropic API), shows a summary table for confirmation, then commits. Supports <code>--dry-run</code>, <code>--push</code>, <code>--project &lt;name&gt;</code>, and <code>--message "&lt;msg&gt;"</code>. Config via local <code>projects.json</code> (never committed).</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill project-commit">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">Source ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">sync-as-built-docs</a></p><p class="desc">审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill sync-as-built-docs">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">Source ↗</a></div></div></div></div><div class="cat"><h2>Productivity<span class="count">1</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">daily-report</a></p><p class="desc">Generate a work daily report ("工作日报") from today's Git commits across one or more repos, filtered by operator/author. A helper script collects the day's commits (subject, body, files, +/− stats); Claude then summarizes them into a clean, value-focused report. Supports today / yesterday / last-N-days and multiple repos &amp; authors.</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill daily-report">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">Source ↗</a></div></div></div></div><div class="cat"><h2>Knowledge<span class="count">1</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">extract-project-interview-knowledge</a></p><p class="desc">从项目源码、测试、CI、发布与事故证据中提炼带源码锚点、回答框架和证据边界的面试知识。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill extract-project-interview-knowledge">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">Source ↗</a></div></div></div></div>
+  </section>
+  <section class="two">
+    <div class="card why"><h2>What's a skill?</h2><p>A skill is a directory with a <code>SKILL.md</code>: YAML frontmatter with a <code>name</code> and a <code>description</code>, plus optional scripts and references. The description tells the agent when to reach for it, so you just ask in your own words.</p></div>
+    <div><h2>Contributing</h2><p>One skill per top-level directory, a portable <code>SKILL.md</code>, a row in the README table, and a clean-checkout smoke test. Collected skills keep their original license and attribution.</p></div>
+  </section>
+  <footer>MIT License · Skills authored by others keep their original terms · <a href="https://github.com/forsakesoul/awesome-skills">github.com/forsakesoul/awesome-skills</a></footer>
+</div>
+<div data-l="zh">
+  <div class="hero">
+    <p class="crumb">AI agent skills · Claude Code · Codex</p>
+    <h1>精选的 agent skill，<br><span class="hi">装上就能用</span>。</h1>
+    <p class="lead">自制与社区收录的 AI 编码 agent skill。每个 skill 是一个带 SKILL.md 的目录，agent 读它的描述，在你的需求匹配时自动调用。</p>
+    <div class="ctas"><a class="btn primary" href="#install-zh">安装</a><a class="btn" href="#skills-zh">浏览 skill · 8 个 skill</a></div>
+  </div>
+  <section id="install-zh">
+    <h2>三步装好</h2>
+    <ol class="steps">
+      <li><span class="num">1</span><div><p>为所有 agent 安装全部 skill（用户级，所有项目可用）：</p><div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">复制</button></div><pre>npx skills add forsakesoul/awesome-skills -g</pre></div></div></li>
+      <li><span class="num">2</span><div><p>或者只装某一个 skill 到指定 agent，免交互：</p><div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">复制</button></div><pre>npx skills add forsakesoul/awesome-skills -g --skill video-compress --agent codex -y</pre></div></div></li>
+      <li><span class="num">3</span><div><p>新开一个 agent 会话，让它加载新的 skill。之后用 <code>npx skills update -g</code> 更新、<code>npx skills remove &lt;name&gt; -g</code> 移除。</p></div></li>
+    </ol>
+  </section>
+  <section id="skills-zh">
+    <h2>Skill 列表</h2>
+    <div class="cat"><h2>媒体<span class="count">3</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">copy-media-files</a></p><p class="desc">Concurrently copy photos/videos (ARW/HIF/JPG/...) from a source directory (e.g. an SD card's DCIM folder) to a target subdirectory, recursively, preserving the relative folder structure. Filters by file extension.</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill copy-media-files">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">源码 ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">batch-image-compress</a></p><p class="desc">批量把本地图片上传到 PixelForge 在线压缩站点（或同构服务）压缩，按档位/格式处理后下载到新目录并保留相对结构。默认走服务端接口，<code>--mode ui</code> 可用真实 Chrome 驱动网页。含 md5 秒传、5 分钟 TTL、merge 504 等服务端坑位的绕过方案。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill batch-image-compress">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">源码 ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">video-compress</a></p><p class="desc">用 ffmpeg 把视频压到新目录：按目标大小（压到 N MB 以内，逐级提高 CRF）或固定画质压缩，可限制最大分辨率，源文件不动、ffprobe 核对结果。附场景规则（如 GitHub 内嵌视频压到 5 MB 以内）。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill video-compress">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">源码 ↗</a></div></div></div></div><div class="cat"><h2>工作流<span class="count">3</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">long-task</a></p><p class="desc">保存职责、版本、证据和下一步；换执行会话时核对旧执行与接手边界，用户要求压缩时在 Herdr 的 Codex / Claude / Pi 原会话中原生压缩并恢复。普通 checkpoint 和 Claude 原始备份各自按需使用。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill long-task">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">源码 ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">project-commit</a></p><p class="desc">Batch-commit code across multiple Git repos with one command. Scans all configured projects, generates Conventional Commits messages from diffs (via built-in AI or Anthropic API), shows a summary table for confirmation, then commits. Supports <code>--dry-run</code>, <code>--push</code>, <code>--project &lt;name&gt;</code>, and <code>--message "&lt;msg&gt;"</code>. Config via local <code>projects.json</code> (never committed).</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill project-commit">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">源码 ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">sync-as-built-docs</a></p><p class="desc">审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill sync-as-built-docs">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">源码 ↗</a></div></div></div></div><div class="cat"><h2>效率<span class="count">1</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">daily-report</a></p><p class="desc">Generate a work daily report ("工作日报") from today's Git commits across one or more repos, filtered by operator/author. A helper script collects the day's commits (subject, body, files, +/− stats); Claude then summarizes them into a clean, value-focused report. Supports today / yesterday / last-N-days and multiple repos &amp; authors.</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill daily-report">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">源码 ↗</a></div></div></div></div><div class="cat"><h2>知识<span class="count">1</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">extract-project-interview-knowledge</a></p><p class="desc">从项目源码、测试、CI、发布与事故证据中提炼带源码锚点、回答框架和证据边界的面试知识。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill extract-project-interview-knowledge">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">源码 ↗</a></div></div></div></div>
+  </section>
+  <section class="two">
+    <div class="card why"><h2>什么是 skill？</h2><p>skill 是一个带 <code>SKILL.md</code> 的目录：YAML 前置元数据里写 <code>name</code> 和 <code>description</code>，可附带脚本和参考资料。description 告诉 agent 什么时候该用它，你只需用自己的话提需求。</p></div>
+    <div><h2>参与贡献</h2><p>每个 skill 一个顶层目录，SKILL.md 路径可移植，在 README 表格里登记一行，并从干净的检出跑通冒烟测试。收录他人的 skill 保留原许可与署名。</p></div>
+  </section>
+  <footer>MIT 许可证 · 收录的 skill 遵循其原作者的许可 · <a href="https://github.com/forsakesoul/awesome-skills">github.com/forsakesoul/awesome-skills</a></footer>
+</div></main>
+<script>
+const COPY = {"en": ["Copy", "Copied"], "zh": ["复制", "已复制"]}, langs = ["en", "zh"];
+let cur = "en";
+function pick(l) {
+  if (!langs.includes(l)) l = "en";
+  cur = l;
+  document.documentElement.lang = l === "zh" ? "zh-CN" : l;
+  document.querySelectorAll("[data-l]").forEach((e) => e.classList.toggle("on", e.dataset.l === l));
+  document.querySelectorAll(".langs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.set === l)));
+  history.replaceState(null, "", "#" + l);
+}
+async function copy(btn, text, label) {
+  await navigator.clipboard.writeText(text);
+  btn.textContent = COPY[cur][1];
+  setTimeout(() => (btn.textContent = label), 1400);
+}
+document.querySelectorAll(".langs button").forEach((b) => b.addEventListener("click", () => pick(b.dataset.set)));
+document.querySelectorAll(".cp").forEach((b) => b.addEventListener("click", () => copy(b, b.closest(".term").querySelector("pre").textContent, COPY[cur][0])));
+document.querySelectorAll(".chip").forEach((b) => { const label = b.textContent; b.addEventListener("click", () => copy(b, b.dataset.copy, label)); });
+addEventListener("hashchange", () => { const l = location.hash.slice(1); if (langs.includes(l)) pick(l); });
+const h = location.hash.slice(1);
+pick(langs.includes(h) ? h : (navigator.language || "en").slice(0, 2).toLowerCase());
+</script>
+</body>
+</html>
