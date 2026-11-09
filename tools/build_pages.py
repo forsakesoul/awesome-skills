@@ -15,7 +15,7 @@ OUT = ROOT / "docs/index.html"
 REPO = "https://github.com/forsakesoul/awesome-skills"
 INSTALL = "npx skills add forsakesoul/awesome-skills"
 
-CATEGORY = {"Media": "媒体", "Workflow": "工作流", "Productivity": "效率", "Knowledge": "知识"}
+CATEGORY = {"Media": "媒体", "Workflow": "工作流", "Productivity": "效率", "Knowledge": "知识", "Design": "设计"}
 
 T = {
     "en": dict(

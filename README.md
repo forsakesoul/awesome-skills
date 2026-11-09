@@ -42,6 +42,12 @@ An agent skill is a packaged capability that a compatible AI coding agent can in
 |---|---|
 | [`extract-project-interview-knowledge`](./extract-project-interview-knowledge) | 从项目源码、测试、CI、发布与事故证据中提炼带源码锚点、回答框架和证据边界的面试知识。 |
 
+### Design
+
+| Skill | Description |
+|---|---|
+| [`voyage-theme`](./voyage-theme) | 航海手账网页主题：羊皮纸、深海蓝、红黄点缀与手写标题，提供主页骨架和知识库阅读变体，参考 herdr-nakama。 |
+
 <!-- Add new skills here, grouped by category. Keep entries one-line. -->
 
 ## Install a skill

@@ -1,0 +1,50 @@
+---
+name: voyage-theme
+description: 为项目主页、文档与知识库应用使用航海手账主题；用户提到航海手账、voyage 或参考 herdr-nakama 风格时使用。
+---
+
+# 航海手账主题
+
+本主题由 awesome-skills 维护。羊皮纸底、深海蓝正文与代码块，配红色罗盘、黄色荧光标记、手写标题、虚线分隔和硬阴影。参考 herdr-nakama 的页面语言，按产品用途调整密度，不照搬落地页布局。
+
+## 资源与入口
+
+- 项目主页或落地页：先读 [assets/voyage.css](assets/voyage.css) 与 [assets/skeleton.html](assets/skeleton.html)，复用主题 token 和需要的组件。
+- 文档或阅读应用：先读 [assets/reading.css](assets/reading.css)，用于三栏目录、阅读纸页、页内目录、搜索与移动抽屉。它是应用样式适配参考，按现有组件挂载类名；不会替应用创建导航或状态。
+
+`voyage.css` 是基础主题来源，`reading.css` 是阅读场景变体。消费项目保留各自的布局与行为；更新主题时按实际使用的变体同步，保留业务特有样式。
+
+## 视觉约定
+
+| 元素 | 取值与用途 |
+| --- | --- |
+| 主色 | 羊皮纸 `#f6eedb`，深海蓝 `#1d2a44`，卡片 `#fbf6e8` |
+| 强调 | 罗盘红 `#c8372d`；小号文字可用更深的 `#b83229`，选中背景与荧光笔用 `#f2c230` |
+| 字体 | 标题 ZCOOL KuaiLe，英文字标 Permanent Marker，正文 Noto Sans SC，代码 JetBrains Mono；均有系统字体回退 |
+| 排版 | 主页可用双圈序号、贴胶带卡片；正文只在 h1/h2 使用手写字体，长文保留正常字重、行高与清晰层级 |
+| 代码 | 深海蓝底，浅色正文与语法高亮；复制按钮支持键盘焦点与触摸屏 |
+| 暗色阅读 | 深海蓝底、暖白文字、柔和红黄强调；通过现有主题切换机制应用 `.dark`，保留用户偏好 |
+
+字体可在 HTML head 通过 Google Fonts 加载：`ZCOOL+KuaiLe`、`Permanent+Marker`、`Noto+Sans+SC:wght@400;500;600;700`、`JetBrains+Mono:wght@400;600`，使用 `display=swap`。网络不可达时仍应可读。
+
+阅读变体在 1536 / 1920 / 2400px 视口将纸页上限扩展为 1040 / 1200 / 1440px，2K 同时扩展侧栏；代码与表格使用纸页宽度，窄屏在各自容器内横向滚动。
+
+## 使用与核验
+
+1. 先确认页面是主页还是阅读工具，复用现有路由、目录、搜索、登录与主题切换。仅添加表现所需的类名和 token，不为主题重建业务逻辑。
+2. 静态单页可内联所需 CSS；React/Vite 等应用按原有全局样式入口集成，不复制不相关的 hero、语言切换或视频组件。
+3. README 或 SKILL 表格生成的网页沿用原生成脚本，并运行其过期检查；普通阅读应用使用现有内容 catalog，不另建主题数据源。
+4. 真实浏览器核对桌面与窄屏、亮暗模式、目录与锚点、搜索、表格与代码横向滚动、复制及焦点。尊重 reduced-motion，标题与正文不能横向撑破页面。
+5. 语言切换仅响应语言代码 hash；段落锚点仍滚动。媒体更新使用内容摘要作缓存版本，不凭同名替换判断浏览器已加载新文件。
+
+主题任务交付可审阅的本地页面与截图；commit、push 和发布按用户对具体动作的授权执行。
+
+## 现有使用位置
+
+| 项目 | 适配位置 |
+| --- | --- |
+| [herdr-nakama](https://github.com/forsakesoul/herdr-nakama) | `tools/build_pages.py` 生成 `docs/index.html`，主页布局参考 |
+| [awesome-skills](https://github.com/forsakesoul/awesome-skills) | `tools/pages.css` 与 `tools/build_pages.py`，生成 skill 目录页 |
+| [interview](https://github.com/forsakesoul/interview) | `interview-app/src/index.css`、应用外壳与阅读组件；知识库阅读变体 |
+
+旧个人安装曾位于 ai-agent-config 的 `skills/private/voyage-theme`；后续主题规范与资源修改以本目录为维护入口。

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project — one-line tagline</title>
+<meta name="description" content="One sentence about the project.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Permanent+Marker&family=Noto+Sans+SC:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<!-- Preview only. In a real page inline voyage.css into <style> so the page has no external stylesheet. -->
+<link rel="stylesheet" href="voyage.css">
+</head>
+<body>
+<div class="top"><div class="in">
+  <a class="brand" href="#">Proj<b>ect</b></a>
+  <nav><a href="https://github.com/owner/repo">GitHub</a>
+    <span class="langs" role="group" aria-label="Language"><button type="button" data-set="en">EN</button><button type="button" data-set="zh">中</button></span>
+  </nav>
+</div></div>
+<main>
+<div data-l="en">
+  <div class="hero">
+    <p class="crumb">Category · audience · platform</p>
+    <h1>A short promise,<br><span class="hi">the key phrase</span>.</h1>
+    <p class="lead">Two sentences: what it is and what the reader gets.</p>
+    <div class="ctas"><a class="btn primary" href="#install-en">Install</a><a class="btn" href="https://github.com/owner/repo">GitHub ↗</a></div>
+    <!-- Media: append ?v=<first 8 hex of the file's sha256> so a replaced file under the same name is not served from cache. -->
+    <video class="video" controls preload="metadata" playsinline poster="media/demo.png?v=00000000" src="media/demo.mp4?v=00000000"></video>
+    <p class="note">Caption under the video.</p>
+  </div>
+  <section id="install-en">
+    <h2>Three steps</h2>
+    <ol class="steps">
+      <li><span class="num">1</span><div><p>Step text with <code>inline code</code>.</p>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">Copy</button></div><pre>echo first command</pre></div></div></li>
+      <li><span class="num">2</span><div><p>Press <kbd>prefix</kbd>+<kbd>u</kbd>.</p></div></li>
+    </ol>
+  </section>
+  <section>
+    <h2>Cards</h2>
+    <div class="crew">
+      <div class="card"><h3>Role one</h3><p>What it does.</p></div>
+      <div class="card"><h3>Role two</h3><p>What it does.</p></div>
+      <div class="card"><h3>Role three<span class="tag">optional</span></h3><p>What it does.</p></div>
+    </div>
+  </section>
+  <section class="two">
+    <div class="card why"><h2>Why the name</h2><p>The story card: tilted, taped, with a yellow offset shadow.</p></div>
+    <div><h2>Side note</h2><p>Plain text column.</p></div>
+  </section>
+  <footer>MIT License · credits and links</footer>
+</div>
+<div data-l="zh">
+  <div class="hero">
+    <p class="crumb">分类 · 受众 · 平台</p>
+    <h1>一句短承诺，<br><span class="hi">关键短语</span>。</h1>
+    <p class="lead">两句话：它是什么，读者能得到什么。</p>
+    <div class="ctas"><a class="btn primary" href="#install-zh">安装</a><a class="btn" href="https://github.com/owner/repo">GitHub ↗</a></div>
+  </div>
+  <section id="install-zh"><h2>三步上手</h2><p>……</p></section>
+  <footer>MIT 许可证 · 致谢与链接</footer>
+</div>
+</main>
+<script>
+const COPY = { en: ["Copy", "Copied"], zh: ["复制", "已复制"] }, langs = Object.keys(COPY);
+let cur = "en";
+function pick(l, keep) {
+  if (!langs.includes(l)) l = "en";
+  cur = l;
+  document.documentElement.lang = l === "zh" ? "zh-CN" : l;
+  document.querySelectorAll("[data-l]").forEach((e) => {
+    const on = e.dataset.l === l;
+    e.classList.toggle("on", on);
+    if (!on) e.querySelectorAll("video").forEach((v) => v.pause());
+  });
+  document.querySelectorAll(".langs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.set === l)));
+  if (!keep) history.replaceState(null, "", "#" + l);
+}
+document.querySelectorAll(".langs button").forEach((b) => b.addEventListener("click", () => pick(b.dataset.set)));
+document.querySelectorAll(".cp").forEach((b) => b.addEventListener("click", async () => {
+  await navigator.clipboard.writeText(b.closest(".term").querySelector("pre").textContent);
+  b.textContent = COPY[cur][1];
+  setTimeout(() => (b.textContent = COPY[cur][0]), 1400);
+}));
+// A fragment is a language code (#zh) or ends with one (#install-zh): show that language and keep the fragment.
+function langOf(h) { const m = h.match(/(?:^|-)([a-z]{2})$/); return m && langs.includes(m[1]) ? m[1] : null; }
+addEventListener("hashchange", () => { const h = location.hash.slice(1), l = langOf(h); if (l) pick(l, h !== l); });
+const h = location.hash.slice(1), hl = langOf(h);
+pick(hl || (navigator.language || "en").slice(0, 2).toLowerCase(), !!hl && h !== hl);
+</script>
+</body>
+</html>
