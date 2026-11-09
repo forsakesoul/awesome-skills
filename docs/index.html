@@ -12,15 +12,16 @@
 body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.75 var(--body)}
 a{color:var(--link)}
 .top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.top .in{max-width:1080px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px}
+.top .in{max-width:1160px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px}
 .brand{font-size:24px;color:var(--fg);text-decoration:none}
 .top nav{margin-left:auto;display:flex;align-items:center;gap:10px}
 .top nav>a{color:var(--fg);text-decoration:none;font-size:15px;padding:6px 10px}
 .langs{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
 .langs button{font:600 13px var(--body);border:0;background:transparent;color:var(--sub);padding:6px 12px;cursor:pointer}
 .langs button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
-main{max-width:1080px;margin:0 auto;padding:40px 24px 80px}
-.hero{display:grid;grid-template-columns:1fr;gap:28px;padding:24px 0 8px}
+main{max-width:1160px;margin:0 auto;padding:40px 24px 80px}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.85fr);gap:64px;align-items:center;padding:32px 0 24px}
+.hero-copy{display:grid;gap:26px;min-width:0}
 .crumb{font:600 13px var(--mono);text-transform:uppercase;letter-spacing:2px;margin:0}
 h1{font-size:clamp(36px,6vw,64px);line-height:1.18;margin:6px 0 0}
 .lead{font-size:19px;color:var(--sub);max-width:760px;margin:0}
@@ -30,8 +31,8 @@ h1{font-size:clamp(36px,6vw,64px);line-height:1.18;margin:6px 0 0}
 .note{color:var(--sub);font-size:14px;margin:10px 0 0}
 section{margin-top:72px}
 h2{font-size:clamp(26px,3.6vw,36px);margin:0 0 22px}
-.steps{list-style:none;padding:0;margin:0;display:grid;gap:26px}
-.steps li{display:grid;grid-template-columns:44px 1fr;gap:16px;align-items:start}
+.steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:26px}
+.steps li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;align-items:start}
 .num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font:800 17px var(--mono);margin-top:2px}
 .steps p{margin:4px 0 12px}
 .term{border-radius:12px;overflow:hidden;background:var(--code);color:var(--codefg)}
@@ -71,17 +72,55 @@ h2::before{content:"";display:inline-block;width:20px;height:20px;margin-right:1
 .video{border:2px solid var(--fg);box-shadow:6px 6px 0 var(--hi)}
 .langs button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
 /* catalog cards */
-.cat{margin-top:64px}
+.cat{margin-top:38px;scroll-margin-top:90px}
+.cat h3{font:400 25px var(--display);margin:0 0 18px;display:flex;align-items:center;gap:8px}
 .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.card .name{font:700 18px var(--mono);margin:0 0 8px;color:var(--fg)}
+.card .name{font:700 18px var(--mono);margin:0 0 12px;color:var(--fg);padding-right:30px;overflow-wrap:anywhere}
 .card .name a{color:inherit;text-decoration:none}
 .card .desc{margin:0 0 14px;color:var(--sub);font-size:15px}
-.card .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.card .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:auto;padding-top:16px;border-top:1px dashed var(--line)}
 .chip{font:12px var(--mono);border:1px solid var(--line);border-radius:999px;padding:3px 12px;background:var(--bg);color:var(--fg);cursor:pointer}
 .chip:hover{border-color:var(--fg)}
 .card .src{font-size:13px}
 .count{font:600 13px var(--mono);color:var(--accent);margin-left:8px;vertical-align:4px}
-@media (max-width:820px){.cards{grid-template-columns:1fr}}
+.skill-card{position:relative;display:flex;flex-direction:column;min-width:0;transition:border-color .15s ease,box-shadow .15s ease}
+.skill-card:hover{border-color:var(--fg);box-shadow:4px 4px 0 var(--line)}
+.card-index{position:absolute;right:20px;top:22px;font:12px var(--mono);color:var(--accent)}
+.route-sheet{min-width:0;padding:26px}
+.route-sheet .sheet-label{font:11px var(--mono);letter-spacing:1.5px;color:var(--accent);margin-bottom:14px}
+.route-sheet h2{font-size:28px;margin:0 0 10px;line-height:1.4}
+.route-sheet h2:before{display:none}
+.route-sheet .route-note{font-size:13px;margin-bottom:20px}
+.route-sheet nav{border-top:1px dashed var(--line)}
+.route-sheet nav a{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--fg);padding:13px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.route-sheet nav a:hover{color:var(--accent)}
+.route-no{font:11px var(--mono);color:var(--accent)}
+.route-sheet small{margin-left:auto;font:11px var(--mono);color:var(--sub)}
+.install-link{display:inline-flex;align-items:center;color:var(--fg);text-underline-offset:5px;font-size:15px;padding:10px 0}
+.section-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:2px solid var(--fg);padding-bottom:18px}
+.section-heading h2{margin:0}
+.catalog-total{flex:none;border:1px solid var(--fg);padding:2px 12px;font:12px/1.8 var(--mono);transform:rotate(-3deg);background:var(--hi)}
+.catalog-intro{margin:18px 0 0;color:var(--sub);font-size:15px}
+.installation{border-top:1px dashed var(--line);padding-top:40px}
+[id]{scroll-margin-top:90px}
+a:focus-visible,button:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.skill-card{transition:none}}
+@media (max-width:820px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:38px;padding-top:12px}
+  .hero-copy{gap:22px}.hero .lead{font-size:17px}
+  .route-sheet{max-width:560px;width:100%;justify-self:center}
+  .cards{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  main{padding:26px 20px 56px}.top .in{padding:12px 20px}.brand{font-size:20px}
+  .top nav{gap:4px}.top nav>a{font-size:12px;padding:6px}.langs button{padding:7px 9px}
+  .hero{gap:32px}h1{font-size:36px}.crumb{font-size:10px;letter-spacing:1px}
+  .route-sheet{padding:22px}.route-sheet h2{font-size:24px}
+  .section-heading{gap:8px}.section-heading h2{font-size:28px}.catalog-total{font-size:10px;padding:2px 8px}
+  .card{padding:20px}.card .name{font-size:16px}.card-index{right:16px;top:20px}
+  .steps li{grid-template-columns:32px minmax(0,1fr);gap:12px}.num{width:30px;height:30px;font-size:14px}
+  .term pre{font-size:12px;padding:12px}.two{gap:36px}section{margin-top:56px}
+}
 </style>
 </head>
 <body>
@@ -94,22 +133,30 @@ h2::before{content:"";display:inline-block;width:20px;height:20px;margin-right:1
 <main>
 <div data-l="en">
   <div class="hero">
+    <div class="hero-copy">
     <p class="crumb">AI agent skills · Claude Code · Codex</p>
     <h1>Curated agent skills,<br><span class="hi">ready to install</span>.</h1>
     <p class="lead">Original and collected skills for AI coding agents. Each one is a folder with a SKILL.md; the agent reads its description and invokes it when your request matches.</p>
-    <div class="ctas"><a class="btn primary" href="#install-en">Install</a><a class="btn" href="#skills-en">Browse skills · 8 skills</a></div>
+    <div class="ctas"><a class="btn primary" href="#skills-en">Browse skills · 8 skills</a><a class="install-link" href="#install-en">Install ↘</a></div>
+    </div>
+    <aside class="card why route-sheet" aria-label="Browse by category">
+      <p class="sheet-label">FIELD NOTES / 08 SKILLS</p>
+      <h2>Pick your next task</h2><p class="route-note">A small toolkit, kept ready for the next job.</p>
+      <nav><a href="#cat-media-en"><span class="route-no">01</span><span>Media</span><small>3 skills</small><span aria-hidden="true">↗</span></a><a href="#cat-workflow-en"><span class="route-no">02</span><span>Workflow</span><small>3 skills</small><span aria-hidden="true">↗</span></a><a href="#cat-productivity-en"><span class="route-no">03</span><span>Productivity</span><small>1 skill</small><span aria-hidden="true">↗</span></a><a href="#cat-knowledge-en"><span class="route-no">04</span><span>Knowledge</span><small>1 skill</small><span aria-hidden="true">↗</span></a></nav>
+    </aside>
   </div>
-  <section id="install-en">
+  <section id="skills-en" class="catalog">
+    <div class="section-heading"><h2>The toolkit</h2><span class="catalog-total">8 skills</span></div>
+    <p class="catalog-intro">Pick a task, find a skill, and take just what you need.</p>
+    <div class="cat" id="cat-media-en"><h3>Media<span class="count">3</span></h3><div class="cards"><article class="card skill-card"><span class="card-index">01</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">copy-media-files</a></p><p class="desc">按扩展名并发、递归地把照片或视频复制到目标目录，保留源文件、相对目录结构和元数据，重名自动加后缀不覆盖。适用于 SD 卡导入和媒体归档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill copy-media-files">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">Source ↗</a></div></article><article class="card skill-card"><span class="card-index">02</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">batch-image-compress</a></p><p class="desc">批量把本地图片上传到 PixelForge 在线压缩站点（或同构服务）压缩，按档位/格式处理后下载到新目录并保留相对结构。默认走服务端接口，<code>--mode ui</code> 可用真实 Chrome 驱动网页。含 md5 秒传、5 分钟 TTL、merge 504 等服务端坑位的绕过方案。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill batch-image-compress">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">Source ↗</a></div></article><article class="card skill-card"><span class="card-index">03</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">video-compress</a></p><p class="desc">用 ffmpeg 把视频压到新目录：按目标大小（压到 N MB 以内，逐级提高 CRF）或固定画质压缩，可限制最大分辨率，源文件不动、ffprobe 核对结果。附场景规则（如 GitHub 内嵌视频压到 5 MB 以内）。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill video-compress">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">Source ↗</a></div></article></div></div><div class="cat" id="cat-workflow-en"><h3>Workflow<span class="count">3</span></h3><div class="cards"><article class="card skill-card"><span class="card-index">04</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">long-task</a></p><p class="desc">保存职责、版本、证据和下一步；换执行会话时核对旧执行与接手边界，用户要求压缩时在 Herdr 的 Codex / Claude / Pi 原会话中原生压缩并恢复。普通 checkpoint 和 Claude 原始备份各自按需使用。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill long-task">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">Source ↗</a></div></article><article class="card skill-card"><span class="card-index">05</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">project-commit</a></p><p class="desc">扫描 <code>projects.json</code> 中配置的多个仓库，生成提交计划，确认后按已审阅的路径批量提交，可选推送。提交信息默认按本地规则生成；只有用户授权并显式加 <code>--external-model</code> 时才调用外部模型。支持 <code>--dry-run</code>、<code>--project</code>、<code>--message</code>。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill project-commit">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">Source ↗</a></div></article><article class="card skill-card"><span class="card-index">06</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">sync-as-built-docs</a></p><p class="desc">审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill sync-as-built-docs">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">Source ↗</a></div></article></div></div><div class="cat" id="cat-productivity-en"><h3>Productivity<span class="count">1</span></h3><div class="cards"><article class="card skill-card"><span class="card-index">07</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">daily-report</a></p><p class="desc">根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结：按北京时间与作者采集，一个分支一节，汇总工作价值、变更范围与结果，可关联 GitLab Work Item；“需要处理”由跨日待办台账投影，周报可出三列表格的一页纸小结。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill daily-report">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">Source ↗</a></div></article></div></div><div class="cat" id="cat-knowledge-en"><h3>Knowledge<span class="count">1</span></h3><div class="cards"><article class="card skill-card"><span class="card-index">08</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">extract-project-interview-knowledge</a></p><p class="desc">从项目源码、测试、CI、发布与事故证据中提炼带源码锚点、回答框架和证据边界的面试知识。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill extract-project-interview-knowledge">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">Source ↗</a></div></article></div></div>
+  </section>
+  <section id="install-en" class="installation">
     <h2>Install in three steps</h2>
     <ol class="steps">
       <li><span class="num">1</span><div><p>Install every skill for all your agents (user level, available in every project):</p><div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">Copy</button></div><pre>npx skills add forsakesoul/awesome-skills -g</pre></div></div></li>
       <li><span class="num">2</span><div><p>Or pick one skill and one agent, non-interactively:</p><div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">Copy</button></div><pre>npx skills add forsakesoul/awesome-skills -g --skill video-compress --agent codex -y</pre></div></div></li>
       <li><span class="num">3</span><div><p>Start a new agent session so it picks up the new skills. Update or remove them later with <code>npx skills update -g</code> / <code>npx skills remove &lt;name&gt; -g</code>.</p></div></li>
     </ol>
-  </section>
-  <section id="skills-en">
-    <h2>Skills</h2>
-    <div class="cat"><h2>Media<span class="count">3</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">copy-media-files</a></p><p class="desc">按扩展名并发、递归地把照片或视频复制到目标目录，保留源文件、相对目录结构和元数据，重名自动加后缀不覆盖。适用于 SD 卡导入和媒体归档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill copy-media-files">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">Source ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">batch-image-compress</a></p><p class="desc">批量把本地图片上传到 PixelForge 在线压缩站点（或同构服务）压缩，按档位/格式处理后下载到新目录并保留相对结构。默认走服务端接口，<code>--mode ui</code> 可用真实 Chrome 驱动网页。含 md5 秒传、5 分钟 TTL、merge 504 等服务端坑位的绕过方案。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill batch-image-compress">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">Source ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">video-compress</a></p><p class="desc">用 ffmpeg 把视频压到新目录：按目标大小（压到 N MB 以内，逐级提高 CRF）或固定画质压缩，可限制最大分辨率，源文件不动、ffprobe 核对结果。附场景规则（如 GitHub 内嵌视频压到 5 MB 以内）。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill video-compress">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">Source ↗</a></div></div></div></div><div class="cat"><h2>Workflow<span class="count">3</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">long-task</a></p><p class="desc">保存职责、版本、证据和下一步；换执行会话时核对旧执行与接手边界，用户要求压缩时在 Herdr 的 Codex / Claude / Pi 原会话中原生压缩并恢复。普通 checkpoint 和 Claude 原始备份各自按需使用。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill long-task">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">Source ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">project-commit</a></p><p class="desc">扫描 <code>projects.json</code> 中配置的多个仓库，生成提交计划，确认后按已审阅的路径批量提交，可选推送。提交信息默认按本地规则生成；只有用户授权并显式加 <code>--external-model</code> 时才调用外部模型。支持 <code>--dry-run</code>、<code>--project</code>、<code>--message</code>。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill project-commit">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">Source ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">sync-as-built-docs</a></p><p class="desc">审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill sync-as-built-docs">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">Source ↗</a></div></div></div></div><div class="cat"><h2>Productivity<span class="count">1</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">daily-report</a></p><p class="desc">根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结：按北京时间与作者采集，一个分支一节，汇总工作价值、变更范围与结果，可关联 GitLab Work Item；“需要处理”由跨日待办台账投影，周报可出三列表格的一页纸小结。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill daily-report">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">Source ↗</a></div></div></div></div><div class="cat"><h2>Knowledge<span class="count">1</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">extract-project-interview-knowledge</a></p><p class="desc">从项目源码、测试、CI、发布与事故证据中提炼带源码锚点、回答框架和证据边界的面试知识。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill extract-project-interview-knowledge">copy install</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">Source ↗</a></div></div></div></div>
   </section>
   <section class="two">
     <div class="card why"><h2>What's a skill?</h2><p>A skill is a directory with a <code>SKILL.md</code>: YAML frontmatter with a <code>name</code> and a <code>description</code>, plus optional scripts and references. The description tells the agent when to reach for it, so you just ask in your own words.</p></div>
@@ -119,22 +166,30 @@ h2::before{content:"";display:inline-block;width:20px;height:20px;margin-right:1
 </div>
 <div data-l="zh">
   <div class="hero">
+    <div class="hero-copy">
     <p class="crumb">AI agent skills · Claude Code · Codex</p>
     <h1>精选的 agent skill，<br><span class="hi">装上就能用</span>。</h1>
     <p class="lead">自制与社区收录的 AI 编码 agent skill。每个 skill 是一个带 SKILL.md 的目录，agent 读它的描述，在你的需求匹配时自动调用。</p>
-    <div class="ctas"><a class="btn primary" href="#install-zh">安装</a><a class="btn" href="#skills-zh">浏览 skill · 8 个 skill</a></div>
+    <div class="ctas"><a class="btn primary" href="#skills-zh">浏览 skill · 8 个 skill</a><a class="install-link" href="#install-zh">安装 ↘</a></div>
+    </div>
+    <aside class="card why route-sheet" aria-label="按分类浏览">
+      <p class="sheet-label">FIELD NOTES / 08 SKILLS</p>
+      <h2>下一站，做点什么？</h2><p class="route-note">把趁手的工具，收进同一本航海手账。</p>
+      <nav><a href="#cat-media-zh"><span class="route-no">01</span><span>媒体</span><small>3 个 skill</small><span aria-hidden="true">↗</span></a><a href="#cat-workflow-zh"><span class="route-no">02</span><span>工作流</span><small>3 个 skill</small><span aria-hidden="true">↗</span></a><a href="#cat-productivity-zh"><span class="route-no">03</span><span>效率</span><small>1 个 skill</small><span aria-hidden="true">↗</span></a><a href="#cat-knowledge-zh"><span class="route-no">04</span><span>知识</span><small>1 个 skill</small><span aria-hidden="true">↗</span></a></nav>
+    </aside>
   </div>
-  <section id="install-zh">
+  <section id="skills-zh" class="catalog">
+    <div class="section-heading"><h2>随船工具箱</h2><span class="catalog-total">8 个 skill</span></div>
+    <p class="catalog-intro">从手头的事出发，找到需要的 skill，再单独带走。</p>
+    <div class="cat" id="cat-media-zh"><h3>媒体<span class="count">3</span></h3><div class="cards"><article class="card skill-card"><span class="card-index">01</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">copy-media-files</a></p><p class="desc">按扩展名并发、递归地把照片或视频复制到目标目录，保留源文件、相对目录结构和元数据，重名自动加后缀不覆盖。适用于 SD 卡导入和媒体归档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill copy-media-files">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">源码 ↗</a></div></article><article class="card skill-card"><span class="card-index">02</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">batch-image-compress</a></p><p class="desc">批量把本地图片上传到 PixelForge 在线压缩站点（或同构服务）压缩，按档位/格式处理后下载到新目录并保留相对结构。默认走服务端接口，<code>--mode ui</code> 可用真实 Chrome 驱动网页。含 md5 秒传、5 分钟 TTL、merge 504 等服务端坑位的绕过方案。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill batch-image-compress">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">源码 ↗</a></div></article><article class="card skill-card"><span class="card-index">03</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">video-compress</a></p><p class="desc">用 ffmpeg 把视频压到新目录：按目标大小（压到 N MB 以内，逐级提高 CRF）或固定画质压缩，可限制最大分辨率，源文件不动、ffprobe 核对结果。附场景规则（如 GitHub 内嵌视频压到 5 MB 以内）。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill video-compress">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">源码 ↗</a></div></article></div></div><div class="cat" id="cat-workflow-zh"><h3>工作流<span class="count">3</span></h3><div class="cards"><article class="card skill-card"><span class="card-index">04</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">long-task</a></p><p class="desc">保存职责、版本、证据和下一步；换执行会话时核对旧执行与接手边界，用户要求压缩时在 Herdr 的 Codex / Claude / Pi 原会话中原生压缩并恢复。普通 checkpoint 和 Claude 原始备份各自按需使用。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill long-task">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">源码 ↗</a></div></article><article class="card skill-card"><span class="card-index">05</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">project-commit</a></p><p class="desc">扫描 <code>projects.json</code> 中配置的多个仓库，生成提交计划，确认后按已审阅的路径批量提交，可选推送。提交信息默认按本地规则生成；只有用户授权并显式加 <code>--external-model</code> 时才调用外部模型。支持 <code>--dry-run</code>、<code>--project</code>、<code>--message</code>。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill project-commit">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">源码 ↗</a></div></article><article class="card skill-card"><span class="card-index">06</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">sync-as-built-docs</a></p><p class="desc">审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill sync-as-built-docs">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">源码 ↗</a></div></article></div></div><div class="cat" id="cat-productivity-zh"><h3>效率<span class="count">1</span></h3><div class="cards"><article class="card skill-card"><span class="card-index">07</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">daily-report</a></p><p class="desc">根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结：按北京时间与作者采集，一个分支一节，汇总工作价值、变更范围与结果，可关联 GitLab Work Item；“需要处理”由跨日待办台账投影，周报可出三列表格的一页纸小结。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill daily-report">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">源码 ↗</a></div></article></div></div><div class="cat" id="cat-knowledge-zh"><h3>知识<span class="count">1</span></h3><div class="cards"><article class="card skill-card"><span class="card-index">08</span><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">extract-project-interview-knowledge</a></p><p class="desc">从项目源码、测试、CI、发布与事故证据中提炼带源码锚点、回答框架和证据边界的面试知识。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill extract-project-interview-knowledge">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">源码 ↗</a></div></article></div></div>
+  </section>
+  <section id="install-zh" class="installation">
     <h2>三步装好</h2>
     <ol class="steps">
       <li><span class="num">1</span><div><p>为所有 agent 安装全部 skill（用户级，所有项目可用）：</p><div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">复制</button></div><pre>npx skills add forsakesoul/awesome-skills -g</pre></div></div></li>
       <li><span class="num">2</span><div><p>或者只装某一个 skill 到指定 agent，免交互：</p><div class="term"><div class="bar"><i></i><i></i><i></i><span>bash</span><button type="button" class="cp">复制</button></div><pre>npx skills add forsakesoul/awesome-skills -g --skill video-compress --agent codex -y</pre></div></div></li>
       <li><span class="num">3</span><div><p>新开一个 agent 会话，让它加载新的 skill。之后用 <code>npx skills update -g</code> 更新、<code>npx skills remove &lt;name&gt; -g</code> 移除。</p></div></li>
     </ol>
-  </section>
-  <section id="skills-zh">
-    <h2>Skill 列表</h2>
-    <div class="cat"><h2>媒体<span class="count">3</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">copy-media-files</a></p><p class="desc">按扩展名并发、递归地把照片或视频复制到目标目录，保留源文件、相对目录结构和元数据，重名自动加后缀不覆盖。适用于 SD 卡导入和媒体归档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill copy-media-files">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/copy-media-files">源码 ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">batch-image-compress</a></p><p class="desc">批量把本地图片上传到 PixelForge 在线压缩站点（或同构服务）压缩，按档位/格式处理后下载到新目录并保留相对结构。默认走服务端接口，<code>--mode ui</code> 可用真实 Chrome 驱动网页。含 md5 秒传、5 分钟 TTL、merge 504 等服务端坑位的绕过方案。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill batch-image-compress">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/batch-image-compress">源码 ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">video-compress</a></p><p class="desc">用 ffmpeg 把视频压到新目录：按目标大小（压到 N MB 以内，逐级提高 CRF）或固定画质压缩，可限制最大分辨率，源文件不动、ffprobe 核对结果。附场景规则（如 GitHub 内嵌视频压到 5 MB 以内）。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill video-compress">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/video-compress">源码 ↗</a></div></div></div></div><div class="cat"><h2>工作流<span class="count">3</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">long-task</a></p><p class="desc">保存职责、版本、证据和下一步；换执行会话时核对旧执行与接手边界，用户要求压缩时在 Herdr 的 Codex / Claude / Pi 原会话中原生压缩并恢复。普通 checkpoint 和 Claude 原始备份各自按需使用。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill long-task">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/long-task">源码 ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">project-commit</a></p><p class="desc">扫描 <code>projects.json</code> 中配置的多个仓库，生成提交计划，确认后按已审阅的路径批量提交，可选推送。提交信息默认按本地规则生成；只有用户授权并显式加 <code>--external-model</code> 时才调用外部模型。支持 <code>--dry-run</code>、<code>--project</code>、<code>--message</code>。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill project-commit">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/project-commit">源码 ↗</a></div></div><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">sync-as-built-docs</a></p><p class="desc">审计已经合并、测试或发布的实现，并同步过时或缺失的 README、架构、API 契约、部署、运维及验证文档。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill sync-as-built-docs">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/sync-as-built-docs">源码 ↗</a></div></div></div></div><div class="cat"><h2>效率<span class="count">1</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">daily-report</a></p><p class="desc">根据一个或多个 Git 仓库的提交记录生成工作日报与周功能总结：按北京时间与作者采集，一个分支一节，汇总工作价值、变更范围与结果，可关联 GitLab Work Item；“需要处理”由跨日待办台账投影，周报可出三列表格的一页纸小结。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill daily-report">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/daily-report">源码 ↗</a></div></div></div></div><div class="cat"><h2>知识<span class="count">1</span></h2><div class="cards"><div class="card"><p class="name"><a href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">extract-project-interview-knowledge</a></p><p class="desc">从项目源码、测试、CI、发布与事故证据中提炼带源码锚点、回答框架和证据边界的面试知识。</p><div class="row"><button type="button" class="chip" data-copy="npx skills add forsakesoul/awesome-skills -g --skill extract-project-interview-knowledge">复制安装命令</button><a class="src" href="https://github.com/forsakesoul/awesome-skills/tree/main/extract-project-interview-knowledge">源码 ↗</a></div></div></div></div>
   </section>
   <section class="two">
     <div class="card why"><h2>什么是 skill？</h2><p>skill 是一个带 <code>SKILL.md</code> 的目录：YAML 前置元数据里写 <code>name</code> 和 <code>description</code>，可附带脚本和参考资料。description 告诉 agent 什么时候该用它，你只需用自己的话提需求。</p></div>

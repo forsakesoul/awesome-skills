@@ -27,7 +27,9 @@ T = {
         s1="Install every skill for all your agents (user level, available in every project):",
         s2="Or pick one skill and one agent, non-interactively:",
         s3="Start a new agent session so it picks up the new skills. Update or remove them later with <code>npx skills update -g</code> / <code>npx skills remove &lt;name&gt; -g</code>.",
-        catalog_h="Skills", copy_one="copy install", source="Source ↗",
+        catalog_h="The toolkit", catalog_intro="Pick a task, find a skill, and take just what you need.",
+        routes_h="Pick your next task", routes_note="A small toolkit, kept ready for the next job.", routes_label="Browse by category",
+        copy_one="copy install", source="Source ↗",
         what_h="What's a skill?",
         what_p="A skill is a directory with a <code>SKILL.md</code>: YAML frontmatter with a <code>name</code> and a <code>description</code>, plus optional scripts and references. The description tells the agent when to reach for it, so you just ask in your own words.",
         contrib_h="Contributing",
@@ -43,7 +45,9 @@ T = {
         s1="为所有 agent 安装全部 skill（用户级，所有项目可用）：",
         s2="或者只装某一个 skill 到指定 agent，免交互：",
         s3="新开一个 agent 会话，让它加载新的 skill。之后用 <code>npx skills update -g</code> 更新、<code>npx skills remove &lt;name&gt; -g</code> 移除。",
-        catalog_h="Skill 列表", copy_one="复制安装命令", source="源码 ↗",
+        catalog_h="随船工具箱", catalog_intro="从手头的事出发，找到需要的 skill，再单独带走。",
+        routes_h="下一站，做点什么？", routes_note="把趁手的工具，收进同一本航海手账。", routes_label="按分类浏览",
+        copy_one="复制安装命令", source="源码 ↗",
         what_h="什么是 skill？",
         what_p="skill 是一个带 <code>SKILL.md</code> 的目录：YAML 前置元数据里写 <code>name</code> 和 <code>description</code>，可附带脚本和参考资料。description 告诉 agent 什么时候该用它，你只需用自己的话提需求。",
         contrib_h="参与贡献",
@@ -80,35 +84,48 @@ def term(label, body, t):
 def section(lang, cats):
     t = T[lang]
     n = sum(len(rows) for _, rows in cats)
-    catalog = []
-    for cat, rows in cats:
+    catalog, routes = [], []
+    card_index = 0
+    for route_index, (cat, rows) in enumerate(cats, 1):
+        anchor = "cat-" + re.sub(r"[^a-z0-9]+", "-", cat.lower()).strip("-") + "-" + lang
         cards = "".join(
-            f'<div class="card"><p class="name"><a href="{REPO}/tree/main/{name}">{name}</a></p>'
+            f'<article class="card skill-card"><span class="card-index">{card_index + index:02d}</span><p class="name"><a href="{REPO}/tree/main/{name}">{name}</a></p>'
             f'<p class="desc">{inline_md(desc)}</p><div class="row">'
             f'<button type="button" class="chip" data-copy="{INSTALL} -g --skill {name}">{t["copy_one"]}</button>'
-            f'<a class="src" href="{REPO}/tree/main/{name}">{t["source"]}</a></div></div>'
-            for name, desc in rows)
+            f'<a class="src" href="{REPO}/tree/main/{name}">{t["source"]}</a></div></article>'
+            for index, (name, desc) in enumerate(rows, 1))
+        card_index += len(rows)
         title = cat if lang == "en" else CATEGORY.get(cat, cat)
-        catalog.append(f'<div class="cat"><h2>{title}<span class="count">{len(rows)}</span></h2><div class="cards">{cards}</div></div>')
+        catalog.append(f'<div class="cat" id="{anchor}"><h3>{title}<span class="count">{len(rows)}</span></h3><div class="cards">{cards}</div></div>')
+        route_count = "1 skill" if lang == "en" and len(rows) == 1 else t["count"].format(n=len(rows))
+        routes.append(f'<a href="#{anchor}"><span class="route-no">{route_index:02d}</span><span>{title}</span><small>{route_count}</small><span aria-hidden="true">↗</span></a>')
     return f"""
 <div data-l="{lang}">
   <div class="hero">
+    <div class="hero-copy">
     <p class="crumb">{t['crumb']}</p>
     <h1>{t['h1a']}<br><span class="hi">{t['h1b']}</span>{t['h1c']}</h1>
     <p class="lead">{t['lead']}</p>
-    <div class="ctas"><a class="btn primary" href="#install-{lang}">{t['cta_install']}</a><a class="btn" href="#skills-{lang}">{t['cta_browse']} · {t['count'].format(n=n)}</a></div>
+    <div class="ctas"><a class="btn primary" href="#skills-{lang}">{t['cta_browse']} · {t['count'].format(n=n)}</a><a class="install-link" href="#install-{lang}">{t['cta_install']} ↘</a></div>
+    </div>
+    <aside class="card why route-sheet" aria-label="{t['routes_label']}">
+      <p class="sheet-label">FIELD NOTES / {n:02d} SKILLS</p>
+      <h2>{t['routes_h']}</h2><p class="route-note">{t['routes_note']}</p>
+      <nav>{''.join(routes)}</nav>
+    </aside>
   </div>
-  <section id="install-{lang}">
+  <section id="skills-{lang}" class="catalog">
+    <div class="section-heading"><h2>{t['catalog_h']}</h2><span class="catalog-total">{t['count'].format(n=n)}</span></div>
+    <p class="catalog-intro">{t['catalog_intro']}</p>
+    {''.join(catalog)}
+  </section>
+  <section id="install-{lang}" class="installation">
     <h2>{t['steps_h']}</h2>
     <ol class="steps">
       <li><span class="num">1</span><div><p>{t['s1']}</p>{term('bash', INSTALL + ' -g', t)}</div></li>
       <li><span class="num">2</span><div><p>{t['s2']}</p>{term('bash', INSTALL + ' -g --skill video-compress --agent codex -y', t)}</div></li>
       <li><span class="num">3</span><div><p>{t['s3']}</p></div></li>
     </ol>
-  </section>
-  <section id="skills-{lang}">
-    <h2>{t['catalog_h']}</h2>
-    {''.join(catalog)}
   </section>
   <section class="two">
     <div class="card why"><h2>{t['what_h']}</h2><p>{t['what_p']}</p></div>
