@@ -39,12 +39,6 @@ description: 为项目主页、文档与知识库应用使用航海手账主题�
 
 主题任务交付可审阅的本地页面与截图；commit、push 和发布按用户对具体动作的授权执行。
 
-## 现有使用位置
+## 集成边界
 
-| 项目 | 适配位置 |
-| --- | --- |
-| [herdr-nakama](https://github.com/forsakesoul/herdr-nakama) | `tools/build_pages.py` 生成 `docs/index.html`，主页布局参考 |
-| [awesome-skills](https://github.com/forsakesoul/awesome-skills) | `tools/pages.css` 与 `tools/build_pages.py`，生成 skill 目录页 |
-| [interview](https://github.com/forsakesoul/interview) | `interview-app/src/index.css`、应用外壳与阅读组件；知识库阅读变体 |
-
-旧个人安装曾位于 ai-agent-config 的 `skills/private/voyage-theme`；后续主题规范与资源修改以本目录为维护入口。
+主题规范与可复用资源由本 Skill 自包含维护。消费项目按自身组件和样式入口接入；具体接入路径、适配差异与同步记录写在消费项目自己的文档中。
