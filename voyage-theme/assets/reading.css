@@ -9,6 +9,9 @@
   --rule: #dccfae;
   --compass: #b83229;
   --marker: #f2c230;
+  --code-bg: #0b1424;
+  --code-fg: #f2ead8;
+  --code-border: #64748b;
   --display: "ZCOOL KuaiLe", "Chalkboard SE", "PingFang SC", sans-serif;
 }
 .dark {
@@ -64,21 +67,22 @@ body {
 .markdown-body a:hover { color: var(--compass); text-decoration-color: currentColor; }
 .markdown-body blockquote { border-left: 3px solid var(--compass); background: #f2c23012; border-radius: 0 6px 6px 0; font-style: normal; }
 .markdown-body :not(pre) > code { background: #f2c23024; color: var(--ink); border: 1px solid var(--rule); font-size: .85em; }
+.dark .markdown-body :not(pre) > code { background: #33445e; color: #ffdf85; border-color: var(--code-border); }
 .markdown-body thead { background: var(--ink); }
 .markdown-body th { color: var(--sheet); border-color: var(--rule); }
 .markdown-body td { border-color: var(--rule); }
 .markdown-body tbody tr:nth-child(even) { background: #f2c2300a; }
 .markdown-body img { max-width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; }
-.voyage-code { background: #16223b; color: #ebe4d1; border-radius: 8px; overflow: hidden; }
+.voyage-code { background: var(--code-bg); color: var(--code-fg); border: 1px solid var(--code-border); border-radius: 8px; overflow: hidden; }
 .voyage-code > div { color: #c7cfdb; background: #ffffff0d; }
 .voyage-code > button { color: #ebe4d1; background: #30425c; z-index: 1; }
 .voyage-code pre { padding-top: 26px; overflow-x: auto; }
-.voyage-code code { display: block; padding: 16px; color: #ebe4d1; background: #16223b; font: 12px/1.8 var(--font-mono); white-space: pre; overflow-wrap: normal; }
+.voyage-code code { display: block; padding: 16px; color: var(--code-fg); background: var(--code-bg); font: 14px/1.8 var(--font-mono); white-space: pre; overflow-wrap: normal; }
 kbd { border-bottom-width: 3px; }
 @media (min-width: 1536px) {
   .voyage-sheet { max-width: 1040px; }
   .markdown-body { font-size: 16px; }
-  .voyage-code code { font-size: 13px; }
+  .voyage-code code { font-size: 15px; }
 }
 @media (min-width: 1920px) {
   .voyage-layout { grid-template-columns: 304px minmax(0, 1fr) 240px; }
@@ -104,4 +108,51 @@ kbd { border-bottom-width: 3px; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+}
+
+/* Highlight.js palette for the dark code surface in both reading modes. */
+.hljs {
+  background: var(--code-bg);
+  color: var(--code-fg);
+}
+.hljs-comment,
+.hljs-quote {
+  color: #aab8cc;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  color: #ff7b72;
+}
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr {
+  color: #79c0ff;
+}
+.hljs-string,
+.hljs-doctag {
+  color: #a5d6ff;
+}
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  color: #d2a8ff;
+}
+.hljs-type,
+.hljs-class .hljs-title {
+  color: #ffa657;
+}
+.hljs-tag,
+.hljs-name,
+.hljs-attribute {
+  color: #7ee787;
+}
+.hljs-built_in,
+.hljs-builtin-name {
+  color: #79c0ff;
+}
+.hljs-meta {
+  color: #aab8cc;
 }
